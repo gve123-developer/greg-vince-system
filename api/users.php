@@ -4,7 +4,7 @@ header("Access-Control-Allow-Methods: GET, POST, OPTIONS");
 header("Access-Control-Allow-Headers: Content-Type, X-User-Name");
 header("Content-Type: application/json; charset=UTF-8");
 
-include '../includes/db_connect.php';
+require_once __DIR__ . '/../includes/db_connect.php';
 
 $method = $_SERVER['REQUEST_METHOD'];
 

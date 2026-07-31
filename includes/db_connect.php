@@ -4,11 +4,30 @@ error_reporting(E_ALL);
 ini_set('display_errors', '0');  // Don't show errors to browser — log them to DB instead
 ini_set('log_errors', '1');
 
-// Support Environment Variables for Production (Render/Aiven) with fallback to Localhost
+// Load .env file if present
+$envFile = dirname(__DIR__) . '/.env';
+if (file_exists($envFile)) {
+    $lines = file($envFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+    foreach ($lines as $line) {
+        $line = trim($line);
+        if ($line === '' || str_starts_with($line, '#')) continue;
+        if (strpos($line, '=') !== false) {
+            list($key, $val) = explode('=', $line, 2);
+            $key = trim($key);
+            $val = trim($val, "\"' \t\n\r\0\x0B");
+            if (getenv($key) === false) {
+                putenv("$key=$val");
+                $_ENV[$key] = $val;
+            }
+        }
+    }
+}
+
+// Support Environment Variables for Production with fallback to Localhost
 $servername = getenv('DB_HOST') ?: "127.0.0.1";
 $username   = getenv('DB_USER') ?: "root";
-$password   = getenv('DB_PASSWORD') !== false ? getenv('DB_PASSWORD') : "";
-$dbname     = getenv('DB_NAME') ?: "pos_inventory_system_db";
+$password   = getenv('DB_PASSWORD') !== false ? getenv('DB_PASSWORD') : "root";
+$dbname     = getenv('DB_NAME') ?: "vince_fhionna";
 $port       = getenv('DB_PORT') ?: "3306";
 $use_ssl    = getenv('DB_SSL') === 'true' || getenv('DB_SSL') === '1';
 
