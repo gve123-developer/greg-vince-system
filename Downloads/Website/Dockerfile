@@ -12,6 +12,9 @@ FROM php:8.2-apache
 # Install mysqli extension required for database connection
 RUN docker-php-ext-install mysqli && docker-php-ext-enable mysqli
 
+# Enable Apache rewrite module and AllowOverride for .htaccess SPA routing
+RUN a2enmod rewrite && sed -i 's/AllowOverride None/AllowOverride All/g' /etc/apache2/apache2.conf
+
 # Copy built React static assets to Apache web root
 COPY --from=build /app/dist /var/www/html
 

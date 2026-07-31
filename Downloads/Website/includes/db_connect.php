@@ -6,28 +6,59 @@ ini_set('log_errors', '1');
 
 // Support Environment Variables for Production (Render/Aiven) with fallback to Localhost
 $servername = getenv('DB_HOST') ?: "127.0.0.1";
-$username = getenv('DB_USER') ?: "root";
-$password = getenv('DB_PASSWORD') !== false ? getenv('DB_PASSWORD') : "";
-$dbname = getenv('DB_NAME') ?: "pos_inventory_system_db";
-$port = getenv('DB_PORT') ?: "3306";
+$username   = getenv('DB_USER') ?: "root";
+$password   = getenv('DB_PASSWORD') !== false ? getenv('DB_PASSWORD') : "";
+$dbname     = getenv('DB_NAME') ?: "pos_inventory_system_db";
+$port       = getenv('DB_PORT') ?: "3306";
+$use_ssl    = getenv('DB_SSL') === 'true' || getenv('DB_SSL') === '1';
 
 try {
-    $conn = new mysqli($servername, $username, $password, $dbname, (int)$port);
+    $conn = mysqli_init();
+    if (!$conn) {
+        throw new RuntimeException("mysqli_init failed");
+    }
 
-    if ($conn->connect_error) {
-        throw new RuntimeException("DB connection failed: " . $conn->connect_error);
+    if ($use_ssl) {
+        $conn->options(MYSQLI_OPT_SSL_VERIFY_SERVER_CERT, false);
+        $conn->ssl_set(NULL, NULL, NULL, NULL, NULL);
+    }
+
+    $connected = @$conn->real_connect(
+        $servername,
+        $username,
+        $password,
+        $dbname,
+        (int)$port,
+        NULL,
+        $use_ssl ? MYSQLI_CLIENT_SSL : 0
+    );
+
+    if (!$connected || $conn->connect_error) {
+        $err_msg = $conn->connect_error ?: mysqli_connect_error() ?: "Unknown connection error";
+        throw new RuntimeException("DB connection failed to host '$servername:$port': " . $err_msg);
     }
 
     $conn->set_charset("utf8mb4");
     $conn->query("SET NAMES utf8mb4 COLLATE utf8mb4_unicode_ci");
 
-} catch (RuntimeException $e) {
+} catch (Throwable $e) {
     error_log("[DB_CONNECT] " . $e->getMessage());
     if (!headers_sent()) {
         header("Content-Type: application/json; charset=UTF-8");
+        header("Access-Control-Allow-Origin: *");
     }
     http_response_code(500);
-    echo json_encode(['success' => false, 'message' => 'Database connection error. Check server logs.']);
+    
+    $is_default_host = ($servername === "127.0.0.1" || $servername === "localhost");
+    $response = [
+        'success' => false,
+        'message' => 'Database connection error.',
+        'error'   => $e->getMessage(),
+    ];
+    if ($is_default_host) {
+        $response['hint'] = "DB_HOST is currently using default (127.0.0.1). Ensure DB_HOST, DB_USER, DB_PASSWORD, DB_NAME, DB_PORT are set in Render Dashboard Environment Variables.";
+    }
+    echo json_encode($response);
     exit;
 }
 
