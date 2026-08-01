@@ -49,20 +49,26 @@ class LocalValetDriver extends ValetDriver
     public function serveStaticFile($staticFilePath, $sitePath, $siteName, $uri)
     {
         $mimeTypes = [
-            'json'  => 'application/json',
-            'js'    => 'application/javascript',
-            'css'   => 'text/css',
-            'html'  => 'text/html',
-            'png'   => 'image/png',
-            'jpg'   => 'image/jpeg',
-            'jpeg'  => 'image/jpeg',
-            'gif'   => 'image/gif',
-            'svg'   => 'image/svg+xml',
-            'ico'   => 'image/x-icon',
-            'woff2' => 'font/woff2',
-            'woff'  => 'font/woff',
-            'ttf'   => 'font/ttf',
-            'map'   => 'application/json'
+            'json'        => 'application/json',
+            'js'          => 'application/javascript',
+            'mjs'         => 'application/javascript',
+            'cjs'         => 'application/javascript',
+            'jsx'         => 'application/javascript',
+            'ts'          => 'application/javascript',
+            'tsx'         => 'application/javascript',
+            'css'         => 'text/css',
+            'html'        => 'text/html',
+            'png'         => 'image/png',
+            'jpg'         => 'image/jpeg',
+            'jpeg'        => 'image/jpeg',
+            'gif'         => 'image/gif',
+            'svg'         => 'image/svg+xml',
+            'ico'         => 'image/x-icon',
+            'woff2'       => 'font/woff2',
+            'woff'        => 'font/woff',
+            'ttf'         => 'font/ttf',
+            'map'         => 'application/json',
+            'webmanifest' => 'application/json'
         ];
 
         $ext = strtolower(pathinfo($staticFilePath, PATHINFO_EXTENSION));
