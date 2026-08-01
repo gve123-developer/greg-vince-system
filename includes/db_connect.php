@@ -15,10 +15,8 @@ if (file_exists($envFile)) {
             list($key, $val) = explode('=', $line, 2);
             $key = trim($key);
             $val = trim($val, "\"' \t\n\r\0\x0B");
-            if (getenv($key) === false) {
-                putenv("$key=$val");
-                $_ENV[$key] = $val;
-            }
+            putenv("$key=$val");
+            $_ENV[$key] = $val;
         }
     }
 }

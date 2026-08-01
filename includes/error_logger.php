@@ -71,7 +71,18 @@ set_exception_handler(function(Throwable $e): void {
     $url   = $_SERVER['REQUEST_URI'] ?? '';
     $msg   = get_class($e) . ': ' . $e->getMessage();
     db_log_error('php', 'exception', $msg, $e->getFile(), $e->getLine(), $trace, $url);
-    if (!headers_sent()) http_response_code(500);
+    error_log("[UNCAUGHT EXCEPTION] $msg in {$e->getFile()}:{$e->getLine()}");
+    if (!headers_sent()) {
+        http_response_code(500);
+        header("Content-Type: application/json; charset=UTF-8");
+        echo json_encode([
+            'success' => false,
+            'message' => 'Internal Server Error',
+            'error'   => $msg,
+            'file'    => $e->getFile(),
+            'line'    => $e->getLine()
+        ]);
+    }
 });
 
 register_shutdown_function(function(): void {
