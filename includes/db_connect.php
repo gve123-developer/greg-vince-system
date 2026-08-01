@@ -22,12 +22,12 @@ if (file_exists($envFile)) {
 }
 
 // Support Environment Variables for Production with fallback to Localhost
-$servername = getenv('DB_HOST') ?: "127.0.0.1";
-$username   = getenv('DB_USER') ?: "root";
-$password   = getenv('DB_PASSWORD') !== false ? getenv('DB_PASSWORD') : "root";
-$dbname     = getenv('DB_NAME') ?: "vince_fhionna";
-$port       = getenv('DB_PORT') ?: "3306";
-$use_ssl    = getenv('DB_SSL') === 'true' || getenv('DB_SSL') === '1';
+$servername = $_ENV['DB_HOST'] ?? getenv('DB_HOST') ?: "127.0.0.1";
+$username   = $_ENV['DB_USER'] ?? getenv('DB_USER') ?: "root";
+$password   = $_ENV['DB_PASSWORD'] ?? (getenv('DB_PASSWORD') !== false ? getenv('DB_PASSWORD') : "root");
+$dbname     = $_ENV['DB_NAME'] ?? getenv('DB_NAME') ?: "vince_fhionna";
+$port       = $_ENV['DB_PORT'] ?? getenv('DB_PORT') ?: "3306";
+$use_ssl    = ($_ENV['DB_SSL'] ?? getenv('DB_SSL')) === 'true' || ($_ENV['DB_SSL'] ?? getenv('DB_SSL')) === '1';
 
 try {
     $conn = mysqli_init();
