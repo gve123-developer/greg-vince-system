@@ -36,7 +36,7 @@ class LocalValetDriver extends ValetDriver
             return $staticFilePath;
         }
 
-        if (file_exists($staticFilePath = $sitePath . $uri) && !is_dir($staticFilePath)) {
+        if ($uri !== '/index.html' && file_exists($staticFilePath = $sitePath . $uri) && !is_dir($staticFilePath)) {
             return $staticFilePath;
         }
 
