@@ -21,21 +21,18 @@ class LocalValetDriver extends ValetDriver
             return false;
         }
 
-        if (file_exists($staticFilePath = $sitePath . $uri) && !is_dir($staticFilePath)) {
-            return $staticFilePath;
+        if ($uri === '/' || $uri === '' || $uri === '/index.html') {
+            if (file_exists($sitePath . '/dist/index.html')) {
+                return $sitePath . '/dist/index.html';
+            }
         }
 
         if (file_exists($staticFilePath = $sitePath . '/dist' . $uri) && !is_dir($staticFilePath)) {
             return $staticFilePath;
         }
 
-        if ($uri === '/' || $uri === '') {
-            if (file_exists($sitePath . '/dist/index.html')) {
-                return $sitePath . '/dist/index.html';
-            }
-            if (file_exists($sitePath . '/index.html')) {
-                return $sitePath . '/index.html';
-            }
+        if (file_exists($staticFilePath = $sitePath . $uri) && !is_dir($staticFilePath)) {
+            return $staticFilePath;
         }
 
         return false;
