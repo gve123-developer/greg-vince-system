@@ -1,7 +1,5 @@
 <?php
 
-use Valet\Drivers\ValetDriver;
-
 class LocalValetDriver extends ValetDriver
 {
     /**
