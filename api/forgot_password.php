@@ -4,7 +4,7 @@ header("Access-Control-Allow-Methods: POST, OPTIONS");
 header("Access-Control-Allow-Headers: Content-Type, X-User-Name");
 header("Content-Type: application/json; charset=UTF-8");
 
-require_once __DIR__ . '/../includes/db_connect.php';
+include '../includes/db_connect.php';
 
 $method = $_SERVER['REQUEST_METHOD'];
 
@@ -73,34 +73,23 @@ try {
         }
         $ins_stmt->close();
 
-        // Send email (Standard PHP mail)
-        $subject = "Zoe Pharmacy POS - Password Reset Code";
-        $message = "Hello $fullName,\r\n\r\n";
-        $message .= "We received a request to reset your password. Use the code below to reset it:\r\n\r\n";
-        $message .= "RESET CODE: $token\r\n\r\n";
-        $message .= "This code will expire in 15 minutes.\r\n\r\n";
-        $message .= "If you did not request this, please ignore this email.\r\n";
-        
-        $headers = "From: no-reply@zoepharmacy.com\r\n";
-        $headers .= "Reply-To: support@zoepharmacy.com\r\n";
-        $headers .= "X-Mailer: PHP/" . phpversion();
-
-        // We try to send standard mail, but suppress error warnings
-        @mail($email, $subject, $message, $headers);
+        // Send email using helper
+        include_once __DIR__ . '/../includes/send_email.php';
+        send_reset_email($email, $fullName, $token);
 
         // 🟢 LOCAL DEBUG LOG: Always write to a local log file so the user can test easily!
         $logPath = __DIR__ . '/reset_emails.log';
         $logContent = "==================================================\n";
         $logContent .= "Timestamp: " . date('Y-m-d H:i:s') . "\n";
         $logContent .= "Recipient: $fullName ($email)\n";
-        $logContent .= "Subject: $subject\n";
+        $logContent .= "Subject: Zoe Pharmacy POS - Password Reset Code\n";
         $logContent .= "Token: $token\n";
-        $logContent .= "Message:\n$message\n";
+        $logContent .= "Message: Verification code: $token sent to email.\n";
         $logContent .= "==================================================\n\n";
         file_put_contents($logPath, $logContent, FILE_APPEND);
 
         echo json_encode([
-            'success' => true, 
+            'success' => true,
             'email' => $email,
             'message' => 'Reset code has been sent to your email.'
         ]);
@@ -169,9 +158,7 @@ try {
             'message' => 'Password reset successfully!'
         ]);
         exit();
-    }
-
-    else {
+    } else {
         throw new RuntimeException("Invalid action");
     }
 
@@ -179,3 +166,4 @@ try {
     http_response_code(500);
     echo json_encode(['success' => false, 'message' => $e->getMessage()]);
 }
+?>
