@@ -29,6 +29,15 @@ class LocalValetDriver extends ValetDriver
             return $staticFilePath;
         }
 
+        if ($uri === '/' || $uri === '') {
+            if (file_exists($sitePath . '/dist/index.html')) {
+                return $sitePath . '/dist/index.html';
+            }
+            if (file_exists($sitePath . '/index.html')) {
+                return $sitePath . '/index.html';
+            }
+        }
+
         return false;
     }
 
@@ -37,14 +46,7 @@ class LocalValetDriver extends ValetDriver
      */
     public function frontControllerPath(string $sitePath, string $siteName, string $uri): ?string
     {
-        if (str_starts_with($uri, '/api/')) {
-            $apiFile = $sitePath . $uri;
-            if (file_exists($apiFile) && !is_dir($apiFile)) {
-                return $apiFile;
-            }
-        }
-
-        if (file_exists($sitePath . $uri) && str_ends_with($uri, '.php')) {
+        if (file_exists($sitePath . $uri) && str_ends_with($uri, '.php') && !is_dir($sitePath . $uri)) {
             return $sitePath . $uri;
         }
 
@@ -52,14 +54,7 @@ class LocalValetDriver extends ValetDriver
             return $sitePath . '/index.php';
         }
 
-        if (file_exists($sitePath . '/dist/index.html')) {
-            return $sitePath . '/dist/index.html';
-        }
-
-        if (file_exists($sitePath . '/index.html')) {
-            return $sitePath . '/index.html';
-        }
-
         return null;
     }
 }
+
