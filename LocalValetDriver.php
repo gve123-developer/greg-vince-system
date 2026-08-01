@@ -74,7 +74,12 @@ class LocalValetDriver extends ValetDriver
         $ext = strtolower(pathinfo($staticFilePath, PATHINFO_EXTENSION));
         $type = $mimeTypes[$ext] ?? 'text/plain';
 
+        if (ob_get_level()) {
+            ob_end_clean();
+        }
+
         header('Content-Type: ' . $type);
+        header('Content-Length: ' . filesize($staticFilePath));
         readfile($staticFilePath);
         exit;
     }
