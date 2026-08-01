@@ -39,6 +39,36 @@ class LocalValetDriver extends ValetDriver
     }
 
     /**
+     * Serve static files safely with proper MIME types.
+     */
+    public function serveStaticFile(string $staticFilePath, string $sitePath, string $siteName, string $uri)
+    {
+        $mimeTypes = [
+            'json'  => 'application/json',
+            'js'    => 'application/javascript',
+            'css'   => 'text/css',
+            'html'  => 'text/html',
+            'png'   => 'image/png',
+            'jpg'   => 'image/jpeg',
+            'jpeg'  => 'image/jpeg',
+            'gif'   => 'image/gif',
+            'svg'   => 'image/svg+xml',
+            'ico'   => 'image/x-icon',
+            'woff2' => 'font/woff2',
+            'woff'  => 'font/woff',
+            'ttf'   => 'font/ttf',
+            'map'   => 'application/json'
+        ];
+
+        $ext = strtolower(pathinfo($staticFilePath, PATHINFO_EXTENSION));
+        $type = $mimeTypes[$ext] ?? 'text/plain';
+
+        header('Content-Type: ' . $type);
+        readfile($staticFilePath);
+        exit;
+    }
+
+    /**
      * Get the fully qualified path to the script or front controller.
      */
     public function frontControllerPath(string $sitePath, string $siteName, string $uri): ?string
