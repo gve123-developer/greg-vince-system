@@ -2,11 +2,12 @@
 -- Database: zoe_pos_system_db
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
+SET FOREIGN_KEY_CHECKS = 0;
 START TRANSACTION;
 SET time_zone = "+08:00";
 
-CREATE DATABASE IF NOT EXISTS `vince_fhionna` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-USE `vince_fhionna`;
+CREATE DATABASE IF NOT EXISTS `newDBjustInCase` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+USE `newDBjustInCase`;
 
 -- 1. Users table (No dependencies)
 DROP TABLE IF EXISTS `users`;
@@ -195,11 +196,12 @@ CREATE VIEW `view_stock_status` AS select `products`.`id` AS `id`,`products`.`sk
 
 -- Initial DATA for setup
 INSERT INTO `users` (`username`, `password_hash`, `full_name`, `email`) VALUES
-('owner', '$2y$12$.d/VfW05ikLAmKVA4YalYO3jNJE7ZP1xkfjt8UoiIWsxJ0Thu6Oqu', 'Zoe Owner', 'owner@zoepharmacy.com'),
-('admin', '$2y$12$Trff1mtH5AkDfBflq5Jwru9OolDsnpq.Xj.w0zOdHJt2r6eB0jp4W', 'Zoe Admin', 'admin@zoepharmacy.com');
+('owner', '$2y$10$S83tjJj.Zy9WxeAZJdbTq.Yj15usR21ysS.zxTZY6hdtL72Z6zTKK', 'Zoe Owner', 'owner@zoepharmacy.com'),
+('admin', '$2y$10$9O9pYoQ.p5Oym1uY10PxR.DdH7E0T.LnhGuLKi8nI8pwRClrd5HHS', 'Zoe Admin', 'admin@zoepharmacy.com');
 
 INSERT INTO `categories` (`name`, `description`) VALUES
 ('Pharmaceutical', 'Medicines and drugs'),
 ('Non-pharmaceutical', 'General merchandise and equipment');
 
+SET FOREIGN_KEY_CHECKS = 1;
 COMMIT;

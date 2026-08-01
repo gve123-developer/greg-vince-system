@@ -15,7 +15,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $total_amount    = $_POST['total']                  ?? 0;
         $amount_received = isset($_POST['amount_received']) ? (float)$_POST['amount_received'] : null;
         $change_amount   = isset($_POST['change'])          ? (float)$_POST['change']          : null;
-        $cashier_id      = 1;
+        $cashier_id = null;
+        if (!empty($_SERVER['HTTP_X_USER_NAME'])) {
+            $u_stmt = $conn->prepare("SELECT id FROM users WHERE full_name = ? OR username = ? LIMIT 1");
+            if ($u_stmt) {
+                $u_name = $_SERVER['HTTP_X_USER_NAME'];
+                $u_stmt->bind_param("ss", $u_name, $u_name);
+                $u_stmt->execute();
+                if ($u_res = $u_stmt->get_result()->fetch_assoc()) {
+                    $cashier_id = $u_res['id'];
+                }
+                $u_stmt->close();
+            }
+        }
+        if (!$cashier_id) {
+            $first_user_q = $conn->query("SELECT id FROM users ORDER BY id ASC LIMIT 1");
+            if ($first_user_q && $f_row = $first_user_q->fetch_assoc()) {
+                $cashier_id = $f_row['id'];
+            }
+        }
 
         if (empty($cart)) throw new RuntimeException("Cart is empty or missing");
 

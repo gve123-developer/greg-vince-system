@@ -244,7 +244,7 @@ elseif ($method === 'DELETE') {
         if (!$ins)
             throw new RuntimeException("Prepare archive insert: " . $conn->error);
         $ins->bind_param(
-            "issssididss",
+            "issssiddiss",
             $p['id'],
             $p['sku'],
             $p['name'],

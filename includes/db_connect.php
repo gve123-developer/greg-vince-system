@@ -25,7 +25,7 @@ if (file_exists($envFile)) {
 $servername = $_ENV['DB_HOST'] ?? getenv('DB_HOST') ?: "127.0.0.1";
 $username   = $_ENV['DB_USER'] ?? getenv('DB_USER') ?: "root";
 $password   = $_ENV['DB_PASSWORD'] ?? (getenv('DB_PASSWORD') !== false ? getenv('DB_PASSWORD') : "root");
-$dbname     = $_ENV['DB_NAME'] ?? getenv('DB_NAME') ?: "vince_fhionna";
+$dbname     = $_ENV['DB_NAME'] ?? getenv('DB_NAME') ?: "newDBjustInCase";
 $port       = $_ENV['DB_PORT'] ?? getenv('DB_PORT') ?: "3306";
 $use_ssl    = ($_ENV['DB_SSL'] ?? getenv('DB_SSL')) === 'true' || ($_ENV['DB_SSL'] ?? getenv('DB_SSL')) === '1';
 

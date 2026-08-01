@@ -106,10 +106,28 @@ elseif ($method === 'POST') {
         if (empty($cart))
             throw new RuntimeException("Cart is empty");
 
-        $conn->begin_transaction();
+        $cashier_id = null;
+        if (!empty($_SERVER['HTTP_X_USER_NAME'])) {
+            $u_stmt = $conn->prepare("SELECT id FROM users WHERE full_name = ? OR username = ? LIMIT 1");
+            if ($u_stmt) {
+                $u_name = $_SERVER['HTTP_X_USER_NAME'];
+                $u_stmt->bind_param("ss", $u_name, $u_name);
+                $u_stmt->execute();
+                if ($u_res = $u_stmt->get_result()->fetch_assoc()) {
+                    $cashier_id = $u_res['id'];
+                }
+                $u_stmt->close();
+            }
+        }
+        if (!$cashier_id) {
+            $first_user_q = $conn->query("SELECT id FROM users ORDER BY id ASC LIMIT 1");
+            if ($first_user_q && $f_row = $first_user_q->fetch_assoc()) {
+                $cashier_id = $f_row['id'];
+            }
+        }
 
-        $stmt = $conn->prepare("INSERT INTO transactions (cashier_id, total_amount, payment_method, amount_received, change_amount, status) VALUES (1, ?, ?, ?, ?, 'completed')");
-        $stmt->bind_param("dsdd", $total_amount, $payment_method, $amount_received, $change_amount);
+        $stmt = $conn->prepare("INSERT INTO transactions (cashier_id, total_amount, payment_method, amount_received, change_amount, status) VALUES (?, ?, ?, ?, ?, 'completed')");
+        $stmt->bind_param("idsdd", $cashier_id, $total_amount, $payment_method, $amount_received, $change_amount);
         $stmt->execute();
         $transaction_id = $conn->insert_id;
         $stmt->close();
