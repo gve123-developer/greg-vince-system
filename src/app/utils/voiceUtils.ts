@@ -21,11 +21,14 @@ export const speak = (input: VoiceMessage | VoiceMessage[], options?: { loop?: b
     const items = Array.isArray(input) ? input : [input];
     let index = 0;
 
+    let consecutiveErrors = 0;
+    const maxErrors = 3;
+
     const speakItem = () => {
         if (currentLoopId !== isLoopingCount) return; // A newer call cancelled this
 
         if (index >= items.length) {
-            if (options?.loop) {
+            if (options?.loop && consecutiveErrors < maxErrors) {
                 index = 0; // restart
             } else {
                 return; // done
@@ -71,6 +74,7 @@ export const speak = (input: VoiceMessage | VoiceMessage[], options?: { loop?: b
 
         utterance.onend = () => {
             if (currentLoopId !== isLoopingCount) return;
+            consecutiveErrors = 0; // reset on success
             index++;
             // Apply pause before next message
             if (pause > 0) {
@@ -81,10 +85,20 @@ export const speak = (input: VoiceMessage | VoiceMessage[], options?: { loop?: b
         };
 
         // Handle errors (e.g. if speech is blocked)
-        utterance.onerror = (e) => {
+        utterance.onerror = (e: any) => {
             if (currentLoopId !== isLoopingCount) return;
-            console.error("Speech synthesis error:", e);
-            // Try to continue to next item anyway
+            // Ignore canceled or interrupted events
+            if (e?.error === 'canceled' || e?.error === 'interrupted') return;
+
+            consecutiveErrors++;
+            console.warn("Speech synthesis notice:", e?.error || e);
+
+            if (consecutiveErrors >= maxErrors) {
+                console.warn("Speech synthesis stopped due to repeated browser errors.");
+                stopSpeaking();
+                return;
+            }
+
             index++;
             speakItem();
         };

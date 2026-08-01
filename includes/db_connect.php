@@ -11,8 +11,9 @@ if (file_exists($envFile)) {
     foreach ($lines as $line) {
         $line = trim($line);
         if ($line === '' || str_starts_with($line, '#')) continue;
-        if (strpos($line, '=') !== false) {
-            list($key, $val) = explode('=', $line, 2);
+        $delim = strpos($line, '=') !== false ? '=' : (strpos($line, '-') !== false ? '-' : (strpos($line, ':') !== false ? ':' : null));
+        if ($delim !== null) {
+            list($key, $val) = explode($delim, $line, 2);
             $key = trim($key);
             $val = trim($val, "\"' \t\n\r\0\x0B");
             putenv("$key=$val");
