@@ -44,6 +44,10 @@ class LocalValetDriver extends ValetDriver
             }
         }
 
+        if (file_exists($sitePath . $uri) && str_ends_with($uri, '.php')) {
+            return $sitePath . $uri;
+        }
+
         if (file_exists($sitePath . '/index.php')) {
             return $sitePath . '/index.php';
         }
