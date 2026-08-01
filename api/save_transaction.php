@@ -10,11 +10,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') { http_response_code(200); exit();
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     try {
-        $cart            = isset($_POST['cart'])            ? json_decode($_POST['cart'], true) : [];
-        $payment_method  = $_POST['payment_method']         ?? 'cash';
-        $total_amount    = $_POST['total']                  ?? 0;
-        $amount_received = isset($_POST['amount_received']) ? (float)$_POST['amount_received'] : null;
-        $change_amount   = isset($_POST['change'])          ? (float)$_POST['change']          : null;
+        $raw_input = file_get_contents("php://input");
+        $json_data = json_decode($raw_input, true);
+
+        if ($json_data && is_array($json_data)) {
+            $cart = $json_data['cart'] ?? [];
+            $payment_method = $json_data['payment_method'] ?? 'cash';
+            $total_amount = $json_data['total'] ?? 0;
+            $amount_received = isset($json_data['amount_received']) ? (float)$json_data['amount_received'] : null;
+            $change_amount = isset($json_data['change']) ? (float)$json_data['change'] : null;
+        } else {
+            $cart = isset($_POST['cart']) ? (is_array($_POST['cart']) ? $_POST['cart'] : json_decode($_POST['cart'], true)) : [];
+            $payment_method = $_POST['payment_method'] ?? 'cash';
+            $total_amount = $_POST['total'] ?? 0;
+            $amount_received = isset($_POST['amount_received']) ? (float)$_POST['amount_received'] : null;
+            $change_amount = isset($_POST['change']) ? (float)$_POST['change'] : null;
+        }
         $cashier_id = null;
         if (!empty($_SERVER['HTTP_X_USER_NAME'])) {
             $u_stmt = $conn->prepare("SELECT id FROM users WHERE full_name = ? OR username = ? LIMIT 1");
