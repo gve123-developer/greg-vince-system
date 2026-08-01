@@ -17,6 +17,10 @@ class LocalValetDriver extends ValetDriver
      */
     public function isStaticFile(string $sitePath, string $siteName, string $uri)
     {
+        if (str_ends_with($uri, '.php')) {
+            return false;
+        }
+
         if (file_exists($staticFilePath = $sitePath . $uri) && !is_dir($staticFilePath)) {
             return $staticFilePath;
         }
