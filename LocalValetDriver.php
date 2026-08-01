@@ -25,9 +25,16 @@ class LocalValetDriver extends ValetDriver
             if (file_exists($sitePath . '/dist/index.html')) {
                 return $sitePath . '/dist/index.html';
             }
+            if (file_exists($sitePath . '/index.html')) {
+                return $sitePath . '/index.html';
+            }
         }
 
         if (file_exists($staticFilePath = $sitePath . '/dist' . $uri) && !is_dir($staticFilePath)) {
+            return $staticFilePath;
+        }
+
+        if (file_exists($staticFilePath = $sitePath . '/public' . $uri) && !is_dir($staticFilePath)) {
             return $staticFilePath;
         }
 
@@ -81,7 +88,16 @@ class LocalValetDriver extends ValetDriver
             return $sitePath . '/index.php';
         }
 
+        if (file_exists($sitePath . '/dist/index.html')) {
+            return $sitePath . '/dist/index.html';
+        }
+
+        if (file_exists($sitePath . '/index.html')) {
+            return $sitePath . '/index.html';
+        }
+
         return null;
     }
 }
+
 
