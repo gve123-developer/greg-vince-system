@@ -7,7 +7,7 @@ class LocalValetDriver extends ValetDriver
     /**
      * Determine if the driver serves the request.
      */
-    public function serves(string $sitePath, string $siteName, string $uri): bool
+    public function serves($sitePath, $siteName, $uri)
     {
         return true;
     }
@@ -15,7 +15,7 @@ class LocalValetDriver extends ValetDriver
     /**
      * Determine if the incoming request is for a static file.
      */
-    public function isStaticFile(string $sitePath, string $siteName, string $uri)
+    public function isStaticFile($sitePath, $siteName, $uri)
     {
         if (str_ends_with($uri, '.php')) {
             return false;
@@ -48,7 +48,7 @@ class LocalValetDriver extends ValetDriver
     /**
      * Serve static files safely with proper MIME types.
      */
-    public function serveStaticFile(string $staticFilePath, string $sitePath, string $siteName, string $uri)
+    public function serveStaticFile($staticFilePath, $sitePath, $siteName, $uri)
     {
         $mimeTypes = [
             'json'  => 'application/json',
@@ -78,7 +78,7 @@ class LocalValetDriver extends ValetDriver
     /**
      * Get the fully qualified path to the script or front controller.
      */
-    public function frontControllerPath(string $sitePath, string $siteName, string $uri): ?string
+    public function frontControllerPath($sitePath, $siteName, $uri)
     {
         if (file_exists($sitePath . $uri) && str_ends_with($uri, '.php') && !is_dir($sitePath . $uri)) {
             return $sitePath . $uri;
@@ -99,5 +99,6 @@ class LocalValetDriver extends ValetDriver
         return null;
     }
 }
+
 
 
