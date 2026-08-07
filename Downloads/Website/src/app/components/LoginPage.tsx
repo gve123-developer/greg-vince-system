@@ -362,29 +362,29 @@ export function LoginPage({ onLogin }: LoginPageProps) {
       <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-[#f1fec1]/40 rounded-full blur-[120px] pointer-events-none" />
       <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-[#d5ff47]/20 rounded-full blur-[100px] pointer-events-none" />
 
-      <main className="flex-1 flex flex-col md:flex-row relative z-10 px-4 sm:px-8 md:px-48 items-center justify-center gap-8 md:gap-64 py-6 md:py-12">
+      <main className="flex-1 flex flex-col md:flex-row relative z-10 px-8 md:px-48 items-center justify-center gap-12 md:gap-64 py-12">
         <ParticleBackground />
 
         {/* Left: Branding */}
-        <div className={`flex-none w-full md:w-auto md:max-w-2xl flex flex-col items-start space-y-6 md:space-y-8 transition-all duration-1000 ${isOpening ? 'opacity-0 -translate-x-12' : 'opacity-100 translate-x-0'}`}>
+        <div className={`flex-none w-full md:w-auto md:max-w-2xl flex flex-col items-start space-y-8 transition-all duration-1000 ${isOpening ? 'opacity-0 -translate-x-12' : 'opacity-100 translate-x-0'}`}>
           <div className="space-y-3">
-            <h1 className="text-4xl sm:text-5xl md:text-7xl font-black text-gray-900 leading-[0.85] tracking-tighter">
+            <h1 className="text-5xl md:text-7xl font-black text-gray-900 leading-[0.85] tracking-tighter">
               ZOE <br />
               PHARMACY <br />
-              <span className="text-[#96be12] text-xl sm:text-2xl md:text-3xl block mt-2 tracking-tighter font-extrabold uppercase">
+              <span className="text-[#96be12] text-2xl md:text-3xl block mt-2 tracking-tighter font-extrabold uppercase">
                 & GENERAL MERCHANDISE
               </span>
             </h1>
-            <div className="w-20 sm:w-24 h-2.5 sm:h-3 bg-[#d5ff47] rounded-full" />
+            <div className="w-24 h-3 bg-[#d5ff47] rounded-full" />
           </div>
 
           <div className="space-y-4 w-full max-w-lg">
-            <div className="bg-[#f1fec1] p-4 sm:p-6 rounded-tr-[30px] sm:rounded-tr-[40px] rounded-br-[30px] sm:rounded-br-[40px] border-l-[8px] sm:border-l-[12px] border-[#96be12] shadow-md">
-              <p className="text-gray-900 font-extrabold uppercase text-base sm:text-lg md:text-xl leading-tight tracking-tight">
+            <div className="bg-[#f1fec1] p-6 rounded-tr-[40px] rounded-br-[40px] border-l-[12px] border-[#96be12] shadow-md">
+              <p className="text-gray-900 font-extrabold uppercase text-lg md:text-xl leading-tight tracking-tight">
                 "MAG-INGAT SA MGA PEKENG GAMOT. BUMILI LAMANG SA MGA REGISTRADONG BOTIKA."
               </p>
             </div>
-            <p className="text-gray-400 text-[9px] sm:text-[10px] md:text-xs font-black tracking-[0.2em] sm:tracking-[0.25em] uppercase italic ml-1">
+            <p className="text-gray-400 text-[10px] md:text-xs font-black tracking-[0.25em] uppercase italic ml-1">
               BRANDED AND QUALITY GENERIC MEDICINES AVAILABLE HERE
             </p>
           </div>
@@ -392,18 +392,18 @@ export function LoginPage({ onLogin }: LoginPageProps) {
 
         {/* Right: Login Capsule */}
         <div className="flex-none w-full max-w-[450px] flex justify-center items-center">
-          <Card className={`w-full border-none transition-all duration-700 bg-transparent shadow-none p-0 flex flex-col gap-0 ${isOpening ? 'overflow-visible' : 'overflow-hidden shadow-2xl rounded-[100px] sm:rounded-[240px]'}`}>
+          <Card className={`w-full border-none transition-all duration-700 bg-transparent shadow-none p-0 flex flex-col gap-0 ${isOpening ? 'overflow-visible' : 'overflow-hidden shadow-2xl rounded-[240px]'}`}>
 
             {/* Top Half — White */}
-            <div className={`bg-white pt-10 sm:pt-16 pb-6 sm:pb-10 px-6 sm:px-12 flex flex-col items-center transition-all duration-1000 ease-in-out m-0 ${isOpening ? '-translate-y-[150%] rotate-[-10deg] opacity-0' : 'rounded-t-[100px] sm:rounded-t-[240px]'}`}>
+            <div className={`bg-white pt-16 pb-10 px-12 flex flex-col items-center transition-all duration-1000 ease-in-out m-0 ${isOpening ? '-translate-y-[150%] rotate-[-10deg] opacity-0' : 'rounded-t-[240px]'}`}>
               <img
                 src="/logo.jpg"
                 alt="Zoe Pharmacy Logo"
-                className="h-16 sm:h-20 w-auto mb-4 sm:mb-6 drop-shadow-sm rounded-xl"
+                className="h-20 w-auto mb-6 drop-shadow-sm rounded-xl"
               />
             </div>
 
-            <div className={`bg-[#d5ff47] px-6 sm:px-12 pb-16 sm:pb-24 pt-6 sm:pt-10 flex flex-col space-y-4 sm:space-y-6 transition-all duration-1000 ease-in-out m-0 ${isOpening ? 'translate-y-[150%] rotate-[10deg] opacity-0' : 'rounded-b-[100px] sm:rounded-b-[240px]'}`}>
+            <div className={`bg-[#d5ff47] px-12 pb-24 pt-10 flex flex-col space-y-6 transition-all duration-1000 ease-in-out m-0 ${isOpening ? 'translate-y-[150%] rotate-[10deg] opacity-0' : 'rounded-b-[240px]'}`}>
               {forgotMode === 'login' && (
                 <form
                   ref={formRef}

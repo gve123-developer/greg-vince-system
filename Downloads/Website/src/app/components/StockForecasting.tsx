@@ -25,7 +25,8 @@ interface StockForecastingProps {
     transactions: Transaction[];
 }
 
-import { getForecast } from '@/app/utils/forecastingUtils';
+import { getForecast, calculateAccuracyMetrics } from '@/app/utils/forecastingUtils';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, Legend, ResponsiveContainer } from 'recharts';
 
 export function StockForecasting({ products, transactions }: StockForecastingProps) {
     const [searchTerm, setSearchTerm] = useState('');
@@ -35,9 +36,63 @@ export function StockForecasting({ products, transactions }: StockForecastingPro
     // Calculation: (Stock / Velocity) = Days left
     // ... rest of the code ...
 
+    const [showMetrics, setShowMetrics] = useState(false);
+    const [accuracyTimeframe, setAccuracyTimeframe] = useState<number>(30);
+    const [accuracyMetrics, setAccuracyMetrics] = useState<{sma: any, exponentialSmoothing: any, chartData?: any[]} | null>(null);
+
     useEffect(() => {
         setCurrentPage(1);
     }, [searchTerm]);
+
+    useEffect(() => {
+        let totalSmaMape = 0, totalSmaMae = 0, totalSmaRmse = 0;
+        let totalEsMape = 0, totalEsMae = 0, totalEsRmse = 0;
+        let validProductsCount = 0;
+        
+        let aggregatedChartData: any[] = [];
+
+        products.forEach(p => {
+            const metrics = calculateAccuracyMetrics(p.id, transactions, accuracyTimeframe);
+            if (metrics) {
+                totalSmaMape += parseFloat(metrics.sma.mape);
+                totalSmaMae += parseFloat(metrics.sma.mae);
+                totalSmaRmse += parseFloat(metrics.sma.rmse);
+
+                totalEsMape += parseFloat(metrics.exponentialSmoothing.mape);
+                totalEsMae += parseFloat(metrics.exponentialSmoothing.mae);
+                totalEsRmse += parseFloat(metrics.exponentialSmoothing.rmse);
+                validProductsCount++;
+                
+                if (aggregatedChartData.length === 0) {
+                    aggregatedChartData = metrics.chartData.map(d => ({ ...d }));
+                } else {
+                    metrics.chartData.forEach((dayData, idx) => {
+                        if (aggregatedChartData[idx]) {
+                            aggregatedChartData[idx].Actual += dayData.Actual;
+                            aggregatedChartData[idx].SMA += dayData.SMA;
+                            aggregatedChartData[idx]['Exp. Smoothing'] += dayData['Exp. Smoothing'];
+                        }
+                    });
+                }
+            }
+        });
+
+        if (validProductsCount > 0) {
+            setAccuracyMetrics({
+                sma: {
+                    mape: (totalSmaMape / validProductsCount).toFixed(2) + '%',
+                    mae: (totalSmaMae / validProductsCount).toFixed(2),
+                    rmse: (totalSmaRmse / validProductsCount).toFixed(2)
+                },
+                exponentialSmoothing: {
+                    mape: (totalEsMape / validProductsCount).toFixed(2) + '%',
+                    mae: (totalEsMae / validProductsCount).toFixed(2),
+                    rmse: (totalEsRmse / validProductsCount).toFixed(2)
+                },
+                chartData: aggregatedChartData
+            });
+        }
+    }, [products, transactions, accuracyTimeframe]);
 
     const getProductForecast = (product: Product) => {
         return getForecast(product, transactions, false);
@@ -81,8 +136,98 @@ export function StockForecasting({ products, transactions }: StockForecastingPro
                         <h2 className="text-2xl font-semibold text-gray-900">Stock Forecasting</h2>
                         <p className="text-sm text-gray-500 mt-1">Predictive insights based on sales velocity and environmental data.</p>
                     </div>
-
+                    <Button onClick={() => setShowMetrics(!showMetrics)} variant="outline" className="flex items-center gap-2">
+                        <TrendingUp className="size-4" />
+                        {showMetrics ? "Hide Accuracy Metrics" : "View Accuracy Metrics (SMA vs ES)"}
+                    </Button>
                 </div>
+
+                {showMetrics && accuracyMetrics && (
+                    <Card className="bg-white border-2 border-indigo-200 shadow-md mt-6">
+                        <CardHeader className="bg-indigo-50 border-b border-indigo-100 pb-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                            <div>
+                                <CardTitle className="text-indigo-900 flex items-center gap-2">
+                                    <ShieldCheck className="size-5 text-indigo-600" />
+                                    Algorithmic Accuracy Report (Objective #3)
+                                </CardTitle>
+                                <CardDescription className="text-indigo-700 mt-1">
+                                    Historical backtesting comparing Simple Moving Average (SMA) baseline vs. Custom Algorithmic Forecasting (Exponential Smoothing, α=0.7).
+                                </CardDescription>
+                            </div>
+                            <div className="flex bg-white p-1 rounded-lg border border-indigo-200 shadow-sm">
+                                <button 
+                                    onClick={() => setAccuracyTimeframe(7)}
+                                    className={`px-3 py-1 text-xs font-bold rounded-md transition-colors ${accuracyTimeframe === 7 ? 'bg-indigo-600 text-white' : 'text-indigo-600 hover:bg-indigo-50'}`}
+                                >
+                                    1 Week
+                                </button>
+                                <button 
+                                    onClick={() => setAccuracyTimeframe(30)}
+                                    className={`px-3 py-1 text-xs font-bold rounded-md transition-colors ${accuracyTimeframe === 30 ? 'bg-indigo-600 text-white' : 'text-indigo-600 hover:bg-indigo-50'}`}
+                                >
+                                    30 Days
+                                </button>
+                            </div>
+                        </CardHeader>
+                        <CardContent className="pt-6 space-y-6">
+                            {accuracyMetrics.chartData && accuracyMetrics.chartData.length > 0 && (
+                                <div className="h-64 w-full border border-gray-100 rounded-lg p-4 bg-gray-50/50">
+                                    <h3 className="text-xs font-bold text-gray-500 uppercase tracking-widest text-center mb-4">Actual vs Predicted Demand ({accuracyTimeframe} Days)</h3>
+                                    <ResponsiveContainer width="100%" height="100%">
+                                        <LineChart data={accuracyMetrics.chartData} margin={{ top: 5, right: 20, left: -20, bottom: 5 }}>
+                                            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e7eb" />
+                                            <XAxis dataKey="date" tick={{fontSize: 10, fill: '#6b7280'}} tickLine={false} axisLine={false} />
+                                            <YAxis tick={{fontSize: 10, fill: '#6b7280'}} tickLine={false} axisLine={false} />
+                                            <RechartsTooltip 
+                                                contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                                                itemStyle={{ fontSize: '12px', fontWeight: 'bold' }}
+                                                labelStyle={{ fontSize: '10px', color: '#6b7280', textTransform: 'uppercase', fontWeight: 'bold' }}
+                                            />
+                                            <Legend wrapperStyle={{ fontSize: '11px', paddingTop: '10px' }} />
+                                            <Line type="monotone" dataKey="Actual" stroke="#111827" strokeWidth={3} dot={false} activeDot={{ r: 4 }} />
+                                            <Line type="monotone" dataKey="SMA" stroke="#9ca3af" strokeWidth={2} strokeDasharray="5 5" dot={false} />
+                                            <Line type="monotone" dataKey="Exp. Smoothing" stroke="#4f46e5" strokeWidth={3} dot={false} activeDot={{ r: 4 }} />
+                                        </LineChart>
+                                    </ResponsiveContainer>
+                                </div>
+                            )}
+                            
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div className="space-y-4 border rounded-lg p-4 bg-gray-50">
+                                    <h3 className="font-bold text-gray-700 text-center uppercase tracking-wider text-sm">Baseline: SMA</h3>
+                                    <div className="flex justify-between items-center border-b pb-2">
+                                        <span className="text-gray-500 font-medium">MAPE (Error %)</span>
+                                        <span className="font-bold text-gray-900 text-lg">{accuracyMetrics.sma.mape}</span>
+                                    </div>
+                                    <div className="flex justify-between items-center border-b pb-2">
+                                        <span className="text-gray-500 font-medium">MAE (Absolute Error)</span>
+                                        <span className="font-bold text-gray-900">{accuracyMetrics.sma.mae} units</span>
+                                    </div>
+                                    <div className="flex justify-between items-center">
+                                        <span className="text-gray-500 font-medium">RMSE (Squared Error)</span>
+                                        <span className="font-bold text-gray-900">{accuracyMetrics.sma.rmse}</span>
+                                    </div>
+                                </div>
+                                <div className="space-y-4 border-2 border-indigo-200 rounded-lg p-4 bg-indigo-50/50 relative overflow-hidden">
+                                    <div className="absolute -right-6 -top-6 bg-green-500 text-white text-[9px] font-black px-8 py-1 rotate-45 transform origin-bottom-left uppercase tracking-widest shadow-sm">Winner</div>
+                                    <h3 className="font-bold text-indigo-900 text-center uppercase tracking-wider text-sm">Custom Algorithmic Forecasting (Exp. Smoothing)</h3>
+                                    <div className="flex justify-between items-center border-b border-indigo-100 pb-2">
+                                        <span className="text-indigo-700 font-medium flex items-center gap-2">MAPE (Error %) <Badge className="bg-green-500 hover:bg-green-600 text-white text-[9px] px-1 py-0 leading-none">LOWER IS BETTER</Badge></span>
+                                        <span className="font-black text-indigo-900 text-xl">{accuracyMetrics.exponentialSmoothing.mape}</span>
+                                    </div>
+                                    <div className="flex justify-between items-center border-b border-indigo-100 pb-2">
+                                        <span className="text-indigo-700 font-medium">MAE (Absolute Error)</span>
+                                        <span className="font-bold text-indigo-900">{accuracyMetrics.exponentialSmoothing.mae} units</span>
+                                    </div>
+                                    <div className="flex justify-between items-center">
+                                        <span className="text-indigo-700 font-medium">RMSE (Squared Error)</span>
+                                        <span className="font-bold text-indigo-900">{accuracyMetrics.exponentialSmoothing.rmse}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </CardContent>
+                    </Card>
+                )}
 
             <ErrorBoundary fallbackTitle="Forecasting Summary Error">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -126,7 +271,7 @@ export function StockForecasting({ products, transactions }: StockForecastingPro
                     <CardHeader className="bg-gray-50 border-b border-gray-200 flex flex-row items-center justify-between space-y-0 p-6">
                         <div>
                             <CardTitle className="text-lg font-bold text-gray-900 uppercase tracking-tight">Forecast Insights</CardTitle>
-                            <CardDescription className="text-sm text-gray-500">Estimated stock duration and reorder recommendations based on 30-day velocity.</CardDescription>
+                            <CardDescription className="text-sm text-gray-500">Estimated stock duration and dynamic reorder recommendations (14-days for fast-moving, 30-days for slow-moving) based on Exponential Smoothing.</CardDescription>
                         </div>
                         <div className="max-w-xs relative">
                             <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-gray-400" />
