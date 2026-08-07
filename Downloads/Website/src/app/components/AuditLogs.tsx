@@ -179,9 +179,9 @@ export function AuditLogs({ currentUser }: AuditLogsProps) {
                                                 <TableCell className="py-4 text-[11px] text-slate-600 font-medium leading-relaxed group-hover:text-slate-900">
                                                     {log.details}
                                                 </TableCell>
-                                                <TableCell className="py-4 pr-6 text-[10px] text-slate-400 font-mono font-bold text-right">
-                                                    {new Date(log.timestamp).toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' })}
-                                                </TableCell>
+                                                 <TableCell className="py-4 pr-6 text-[10px] text-slate-400 font-mono font-bold text-right">
+                                                     {log.timestamp ? new Date(log.timestamp.includes('T') ? log.timestamp : log.timestamp.replace(' ', 'T')).toLocaleString('en-US', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true }) : ''}
+                                                 </TableCell>
                                             </TableRow>
                                         ))
                                     ) : (

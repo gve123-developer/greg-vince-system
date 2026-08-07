@@ -82,9 +82,11 @@ export function ExpiryManagement({ currentUser, products, onProductsChange }: Ex
         if (!expiryDate) return undefined;
         const today = new Date();
         today.setHours(0, 0, 0, 0);
-        const expiry = new Date(expiryDate);
+        const cleanDate = expiryDate.includes('T') ? expiryDate : expiryDate + 'T00:00:00';
+        const expiry = new Date(cleanDate);
+        expiry.setHours(0, 0, 0, 0);
         const diffTime = expiry.getTime() - today.getTime();
-        return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        return Math.round(diffTime / (1000 * 60 * 60 * 24));
     };
 
     const filteredProducts = products

@@ -172,7 +172,8 @@ export function Dashboard({ currentUser, products }: DashboardProps) {
       // Completely ignore voided transactions in all sales logic
       if (t.status === 'voided') return false;
 
-      const d = new Date(t.date);
+      const dateStr = t.date ? (t.date.includes('T') ? t.date : t.date.replace(' ', 'T')) : '';
+      const d = new Date(dateStr);
       const txDay = new Date(d.getFullYear(), d.getMonth(), d.getDate());
 
       if (timeRange === 'all') return true;

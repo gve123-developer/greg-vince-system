@@ -87,7 +87,8 @@ export function Reports({ currentUser }: ReportsProps) {
 
     return transactions.filter(t => {
       if (t.status === 'voided') return false;
-      const txDate = new Date(t.date);
+      const dateStr = t.date ? (t.date.includes('T') ? t.date : t.date.replace(' ', 'T')) : '';
+      const txDate = new Date(dateStr);
       const txDay = new Date(txDate.getFullYear(), txDate.getMonth(), txDate.getDate());
       if (timeRange === 'daily') {
         return txDay.getTime() === today.getTime();
