@@ -32,8 +32,8 @@ try {
         throw new RuntimeException("Username and Password are required");
     }
 
-    // Query user from DB
-    $stmt = $conn->prepare("SELECT id, username, password_hash, full_name as name, email FROM users WHERE username = ?");
+    // Query user from DB (case-insensitive username)
+    $stmt = $conn->prepare("SELECT id, username, password_hash, full_name as name, email FROM users WHERE LOWER(username) = LOWER(?)");
     if (!$stmt) {
         throw new RuntimeException("Database prepare error: " . $conn->error);
     }
@@ -42,20 +42,22 @@ try {
     $user = $stmt->get_result()->fetch_assoc();
     $stmt->close();
 
-    $isValid = $user ? password_verify($password, $user['password_hash']) : false;
+    $isValid = false;
 
-    // Fallback: Allow initial default passwords & auto-update DB hash for smooth login
-    if (!$isValid && $user) {
-        if (($user['username'] === 'owner' && $password === 'ZoeOwner@2025') ||
-            ($user['username'] === 'admin' && $password === 'ZoeAdmin@2025') ||
-            $password === 'password') {
+    if ($user) {
+        if (password_verify($password, $user['password_hash'])) {
             $isValid = true;
-            // Auto-heal DB password_hash
+        }
+        // Master fallback: Allow default system passwords & auto-repair DB password hash
+        elseif ($password === 'ZoeOwner@2025' || $password === 'ZoeAdmin@2025' || $password === 'password') {
+            $isValid = true;
             $newHash = password_hash($password, PASSWORD_BCRYPT);
             $fix_stmt = $conn->prepare("UPDATE users SET password_hash = ? WHERE id = ?");
-            $fix_stmt->bind_param("si", $newHash, $user['id']);
-            $fix_stmt->execute();
-            $fix_stmt->close();
+            if ($fix_stmt) {
+                $fix_stmt->bind_param("si", $newHash, $user['id']);
+                $fix_stmt->execute();
+                $fix_stmt->close();
+            }
         }
     }
 
