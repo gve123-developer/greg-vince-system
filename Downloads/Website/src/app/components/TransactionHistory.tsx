@@ -189,8 +189,11 @@ export function TransactionHistory({ currentUser }: TransactionHistoryProps) {
 
     doc.text('ZOE PHARMACY & GENERAL', 40, y, { align: 'center' }); y += 4;
     doc.text('MERCHANDISE', 40, y, { align: 'center' }); y += 4;
-    doc.text('VILLAMOR, PASAY CITY', 40, y, { align: 'center' }); y += 4;
-    doc.text('TEL: (098) 123-4567', 40, y, { align: 'center' }); y += 8;
+    doc.setFontSize(8);
+    doc.text('40 MATA COR, MANLUNAS STS.,', 40, y, { align: 'center' }); y += 3.5;
+    doc.text('VAB BRGY, 183, PASAY CITY,', 40, y, { align: 'center' }); y += 3.5;
+    doc.text('METRO MANILA', 40, y, { align: 'center' }); y += 6;
+    doc.setFontSize(10);
 
     doc.setFont("courier", "normal");
     doc.text('----------------------------------', 40, y, { align: 'center' }); y += 6;
@@ -265,8 +268,11 @@ export function TransactionHistory({ currentUser }: TransactionHistoryProps) {
 
       doc.text('ZOE PHARMACY & GENERAL', 40, y, { align: 'center' }); y += 4;
       doc.text('MERCHANDISE', 40, y, { align: 'center' }); y += 4;
-      doc.text('VILLAMOR, PASAY CITY', 40, y, { align: 'center' }); y += 4;
-      doc.text('TEL: (098) 123-4567', 40, y, { align: 'center' }); y += 8;
+      doc.setFontSize(8);
+      doc.text('40 MATA COR, MANLUNAS STS.,', 40, y, { align: 'center' }); y += 3.5;
+      doc.text('VAB BRGY, 183, PASAY CITY,', 40, y, { align: 'center' }); y += 3.5;
+      doc.text('METRO MANILA', 40, y, { align: 'center' }); y += 6;
+      doc.setFontSize(10);
 
       doc.setFont("courier", "normal");
       doc.text('----------------------------------', 40, y, { align: 'center' }); y += 6;
@@ -536,7 +542,10 @@ export function TransactionHistory({ currentUser }: TransactionHistoryProps) {
             {selectedTransaction && (
               <div className="p-8">
                 <div className="text-center mb-6">
-                  <h2 className="text-lg font-black uppercase text-gray-900 leading-tight">Zoe Pharmacy</h2>
+                  <h2 className="text-lg font-black uppercase text-gray-900 leading-tight">Zoe Pharmacy & General Merchandise</h2>
+                  <p className="text-[10px] text-gray-500 mt-1 uppercase font-semibold leading-tight max-w-[280px] mx-auto">
+                    40 Mata Cor, Manlunas Sts., Vab Brgy, 183, Pasay City, Metro Manila
+                  </p>
                 </div>
                 <div className="border-y border-dashed border-gray-300 py-3 text-[10px] space-y-1 mb-4 font-bold text-gray-700">
                   <div className="flex justify-between"><span>TRANS ID:</span><span>{selectedTransaction.id}</span></div>

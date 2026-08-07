@@ -299,8 +299,11 @@ export function POSSystem({ currentUser, products, onProductsChange }: POSSystem
 
     doc.text('ZOE PHARMACY & GENERAL', 40, y, { align: 'center' }); y += 4;
     doc.text('MERCHANDISE', 40, y, { align: 'center' }); y += 4;
-    doc.text('VILLAMOR, PASAY CITY', 40, y, { align: 'center' }); y += 4;
-    doc.text('TEL: (098) 123-4567', 40, y, { align: 'center' }); y += 8;
+    doc.setFontSize(8);
+    doc.text('40 MATA COR, MANLUNAS STS.,', 40, y, { align: 'center' }); y += 3.5;
+    doc.text('VAB BRGY, 183, PASAY CITY,', 40, y, { align: 'center' }); y += 3.5;
+    doc.text('METRO MANILA', 40, y, { align: 'center' }); y += 6;
+    doc.setFontSize(10);
 
     doc.setFont("courier", "normal");
     doc.text('----------------------------------', 40, y, { align: 'center' }); y += 6;
@@ -641,8 +644,9 @@ export function POSSystem({ currentUser, products, onProductsChange }: POSSystem
                 <h2 className="text-lg font-black tracking-tight text-gray-900 leading-tight uppercase">
                   Zoe Pharmacy & General Merchandise
                 </h2>
-                <p className="text-[10px] text-gray-500 mt-1 uppercase">Villamor, Pasay City</p>
-                <p className="text-[10px] text-gray-500 uppercase">Tel: (098) 123-4567</p>
+                <p className="text-[10px] text-gray-500 mt-1 uppercase font-semibold leading-tight max-w-[280px] mx-auto">
+                  40 Mata Cor, Manlunas Sts., Vab Brgy, 183, Pasay City, Metro Manila
+                </p>
               </div>
 
               {/* Transaction Header Info */}
