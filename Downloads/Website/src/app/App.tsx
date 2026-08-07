@@ -329,26 +329,26 @@ function App() {
       {/* Header */}
       <ErrorBoundary fallbackTitle="Header Error">
         <header className="border-b border-gray-200 sticky top-0 z-30 flex-shrink-0" style={{ backgroundColor: '#d5ff47' }}>
-          <div className="px-3 md:px-6 py-3 md:py-4">
+          <div className="px-3 sm:px-6 py-2.5 sm:py-4">
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2 md:gap-4 min-w-0">
+              <div className="flex items-center gap-2 sm:gap-4 min-w-0">
                 <Button
                   variant="ghost"
                   size="icon"
                   onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-                  className="hover:bg-black/5 shrink-0"
+                  className="hover:bg-black/5 shrink-0 size-9 sm:size-10"
                 >
-                  <Menu className="size-6" />
+                  <Menu className="size-5 sm:size-6" />
                 </Button>
                 <div className="min-w-0">
-                  <h1 className="font-semibold text-xs sm:text-lg md:text-xl text-gray-900 uppercase truncate">Zoe Pharmacy & General Merchandise</h1>
-                  <p className="text-[10px] sm:text-xs md:text-sm text-gray-500">Inventory & POS System</p>
+                  <h1 className="font-semibold text-xs sm:text-lg md:text-xl text-gray-900 uppercase truncate leading-tight">Zoe Pharmacy & General Merchandise</h1>
+                  <p className="text-[9px] sm:text-xs md:text-sm text-gray-600 truncate">Inventory & POS System</p>
                 </div>
               </div>
-              <div className="flex items-center gap-2 md:gap-4 shrink-0">
+              <div className="flex items-center gap-2 sm:gap-4 shrink-0 pl-2">
                 <div className="text-right">
-                  <p className="font-bold text-xs md:text-lg text-gray-900 leading-tight">{currentUser.name}</p>
-                  <p className="text-xs md:text-sm font-semibold text-gray-600 capitalize tracking-wide hidden sm:block">{currentUser.role}</p>
+                  <p className="font-bold text-xs sm:text-base md:text-lg text-gray-900 leading-tight truncate max-w-[100px] sm:max-w-none">{currentUser.name}</p>
+                  <p className="text-[10px] sm:text-xs md:text-sm font-semibold text-gray-600 capitalize tracking-wide hidden sm:block">{currentUser.role}</p>
                 </div>
               </div>
             </div>
@@ -360,7 +360,7 @@ function App() {
         {/* Mobile overlay backdrop */}
         {isSidebarOpen && (
           <div
-            className="fixed inset-0 bg-black/40 z-20 md:hidden"
+            className="fixed inset-0 bg-black/50 backdrop-blur-xs z-40 md:hidden transition-opacity"
             onClick={() => setIsSidebarOpen(false)}
           />
         )}
@@ -368,8 +368,8 @@ function App() {
         {/* Sidebar */}
         <ErrorBoundary fallbackTitle="Sidebar Error">
           <aside
-            className={`fixed md:relative top-0 left-0 h-full z-20 md:z-auto border-r border-gray-200 overflow-y-auto transition-all duration-300 ease-in-out flex-shrink-0
-              ${isSidebarOpen ? 'w-64 translate-x-0 opacity-100' : 'w-0 -translate-x-full opacity-0 overflow-hidden'}
+            className={`fixed md:relative top-0 left-0 h-full z-50 md:z-auto border-r border-gray-200 overflow-y-auto transition-all duration-300 ease-in-out flex-shrink-0
+              ${isSidebarOpen ? 'w-64 translate-x-0 opacity-100 shadow-2xl md:shadow-none' : 'w-0 -translate-x-full opacity-0 overflow-hidden'}
               md:top-auto
             `}
             style={{ backgroundColor: '#f1fec1' }}
@@ -500,7 +500,8 @@ function App() {
                 </div>
 
                 <div className="w-full bg-white rounded-lg border border-gray-200 overflow-hidden shadow-sm">
-                  <table className="w-full">
+                  <div className="overflow-x-auto w-full">
+                    <table className="w-full min-w-[700px]">
                     <thead className="bg-gray-100 border-b border-gray-200">
                       <tr>
                         <th className="px-6 py-3 border text-left text-sm font-bold text-gray-700">Product Name</th>
@@ -537,7 +538,8 @@ function App() {
                       )}
                     </tbody>
                   </table>
-                  {lowStockProducts.length > 0 && (() => {
+                </div>
+                {lowStockProducts.length > 0 && (() => {
                     const totalPages = Math.max(1, Math.ceil(lowStockProducts.length / 15));
                     return (
                       <div className="bg-gray-50 border-t border-gray-200 px-6 py-4 flex flex-col sm:flex-row items-center justify-between gap-4 rounded-b-xl">
