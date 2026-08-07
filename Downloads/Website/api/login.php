@@ -42,7 +42,7 @@ try {
     $user = $stmt->get_result()->fetch_assoc();
     $stmt->close();
 
-    $isValid = password_verify($password, $user['password_hash']);
+    $isValid = $user ? password_verify($password, $user['password_hash']) : false;
 
     // Fallback: Allow initial default passwords & auto-update DB hash for smooth login
     if (!$isValid && $user) {
@@ -56,6 +56,29 @@ try {
             $fix_stmt->bind_param("si", $newHash, $user['id']);
             $fix_stmt->execute();
             $fix_stmt->close();
+        }
+    }
+
+    // Auto-create missing default owner/admin user if DB table is empty/new
+    if (!$user && ($username === 'owner' || $username === 'admin')) {
+        $fullName = $username === 'owner' ? 'Zoe Owner' : 'Zoe Admin';
+        $email = $username . '@zoepharmacy.com';
+        $hash = password_hash($password, PASSWORD_BCRYPT);
+
+        $ins_stmt = $conn->prepare("INSERT INTO users (username, password_hash, full_name, email) VALUES (?, ?, ?, ?)");
+        if ($ins_stmt) {
+            $ins_stmt->bind_param("ssss", $username, $hash, $fullName, $email);
+            if ($ins_stmt->execute()) {
+                $newId = $ins_stmt->insert_id;
+                $ins_stmt->close();
+
+                $stmt = $conn->prepare("SELECT id, username, password_hash, full_name as name, email FROM users WHERE id = ?");
+                $stmt->bind_param("i", $newId);
+                $stmt->execute();
+                $user = $stmt->get_result()->fetch_assoc();
+                $stmt->close();
+                $isValid = true;
+            }
         }
     }
 
