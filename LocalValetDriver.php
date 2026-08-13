@@ -28,6 +28,15 @@ class LocalValetDriver extends ValetDriver
      */
     public function isStaticFile(string $sitePath, string $siteName, string $uri)
     {
+        if ($uri === '/') {
+            if (file_exists($sitePath . '/dist/index.html')) {
+                return $sitePath . '/dist/index.html';
+            }
+            if (file_exists($sitePath . '/index.html')) {
+                return $sitePath . '/index.html';
+            }
+        }
+
         $candidates = [
             $sitePath . '/dist' . $uri,
             $sitePath . '/public' . $uri,
@@ -37,6 +46,16 @@ class LocalValetDriver extends ValetDriver
         foreach ($candidates as $file) {
             if (file_exists($file) && !is_dir($file)) {
                 return $file;
+            }
+        }
+
+        // SPA route fallback: serve dist/index.html as static file if not an /api route and no extension
+        if (!str_starts_with($uri, '/api') && !pathinfo($uri, PATHINFO_EXTENSION)) {
+            if (file_exists($sitePath . '/dist/index.html')) {
+                return $sitePath . '/dist/index.html';
+            }
+            if (file_exists($sitePath . '/index.html')) {
+                return $sitePath . '/index.html';
             }
         }
 
@@ -67,18 +86,8 @@ class LocalValetDriver extends ValetDriver
             }
         }
 
-        // 3. Serve React SPA dist/index.html
-        if (file_exists($distIndex = $sitePath . '/dist/index.html')) {
-            $_SERVER['SCRIPT_FILENAME'] = $distIndex;
-            return $distIndex;
-        }
-
-        if (file_exists($rootIndex = $sitePath . '/index.html')) {
-            $_SERVER['SCRIPT_FILENAME'] = $rootIndex;
-            return $rootIndex;
-        }
-
-        return $sitePath . '/index.html';
+        // 3. Fallback to index.php front controller
+        return $sitePath . '/index.php';
     }
 
     /**
