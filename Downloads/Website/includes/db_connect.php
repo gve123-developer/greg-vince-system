@@ -4,6 +4,29 @@ error_reporting(E_ALL);
 ini_set('display_errors', '0');  // Don't show errors to browser — log them to DB instead
 ini_set('log_errors', '1');
 
+// Auto-load .env if not loaded by server
+if (!getenv('DB_HOST')) {
+    $envPath = dirname(__DIR__) . '/.env';
+    if (!file_exists($envPath)) {
+        $envPath = dirname(__DIR__, 2) . '/.env';
+    }
+    if (file_exists($envPath)) {
+        $lines = file($envPath, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+        foreach ($lines as $line) {
+            $line = trim($line);
+            if ($line === '' || str_starts_with($line, '#')) continue;
+            if (str_contains($line, '=')) {
+                list($name, $val) = explode('=', $line, 2);
+                $name = trim($name);
+                $val = trim($val, " \t\n\r\0\x0B\"'");
+                putenv("{$name}={$val}");
+                $_ENV[$name] = $val;
+                $_SERVER[$name] = $val;
+            }
+        }
+    }
+}
+
 // Support Environment Variables for Production (Render/Aiven) with fallback to Localhost
 $servername = getenv('DB_HOST') ?: "127.0.0.1";
 $username = getenv('DB_USER') ?: "root";

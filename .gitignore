@@ -1,0 +1,36 @@
+# Dependencies
+node_modules/
+**/node_modules/
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# Root junctions pointing to Downloads/Website/
+/api
+/includes
+/public
+/dist
+
+# Build output
+dist/
+build/
+
+# Logs
+*.log
+api/reset_emails.log
+debug_error.log
+
+# IDE & Editor files
+.vscode/
+.idea/
+.vs/
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Database / Local temp files
+mysql_data/
+.vite/

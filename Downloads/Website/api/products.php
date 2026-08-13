@@ -4,7 +4,7 @@ header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS");
 header("Access-Control-Allow-Headers: Content-Type, X-User-Name");
 header("Content-Type: application/json; charset=UTF-8");
 
-include '../includes/db_connect.php';
+include_once __DIR__ . '/../includes/db_connect.php';
 
 $method = $_SERVER['REQUEST_METHOD'];
 
@@ -125,7 +125,7 @@ elseif ($method === 'POST') {
         $new_id = $conn->insert_id;
         $stmt->close();
 
-        include_once '../includes/audit_logger.php';
+        include_once __DIR__ . '/../includes/audit_logger.php';
         $user = $_SERVER['HTTP_X_USER_NAME'] ?? 'Admin';
         log_action($conn, $user, 'Add Product', "Added product: $name (SKU: $sku)");
 
@@ -192,7 +192,7 @@ elseif ($method === 'PUT') {
             throw new RuntimeException("Update product: " . $stmt->error);
         $stmt->close();
 
-        include_once '../includes/audit_logger.php';
+        include_once __DIR__ . '/../includes/audit_logger.php';
         $user = $_SERVER['HTTP_X_USER_NAME'] ?? 'Admin';
         log_action($conn, $user, 'Edit Product', "Updated product: $name (ID: $id)");
 
@@ -211,7 +211,7 @@ elseif ($method === 'DELETE') {
         if (!$id)
             throw new RuntimeException("Missing product ID");
 
-        include_once '../includes/audit_logger.php';
+        include_once __DIR__ . '/../includes/audit_logger.php';
         $user = $_SERVER['HTTP_X_USER_NAME'] ?? 'Admin';
 
         // Load full product row before deletion
