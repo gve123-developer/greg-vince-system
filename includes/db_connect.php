@@ -27,15 +27,29 @@ if (!getenv('DB_HOST')) {
     }
 }
 
-// Support Environment Variables for Production (Render/Aiven) with fallback to Localhost
+// Support Environment Variables for Production with fallback to Larable@2025 / root
 $servername = getenv('DB_HOST') ?: "127.0.0.1";
 $username = getenv('DB_USER') ?: "root";
-$password = getenv('DB_PASSWORD') !== false ? getenv('DB_PASSWORD') : "";
+$password = getenv('DB_PASSWORD') !== false ? getenv('DB_PASSWORD') : "Larable@2025";
 $dbname = getenv('DB_NAME') ?: "pos_inventory_system_db";
 $port = getenv('DB_PORT') ?: "3306";
 
 try {
-    $conn = new mysqli($servername, $username, $password, $dbname, (int) $port);
+    mysqli_report(MYSQLI_REPORT_OFF);
+    $conn = @new mysqli($servername, $username, $password, $dbname, (int) $port);
+
+    // Auto-fallback if initial connection fails
+    if ($conn->connect_error) {
+        $fallbacks = ['Larable@2025', 'root', ''];
+        foreach ($fallbacks as $fbPass) {
+            if ($fbPass === $password) continue;
+            $testConn = @new mysqli($servername, $username, $fbPass, $dbname, (int) $port);
+            if (!$testConn->connect_error) {
+                $conn = $testConn;
+                break;
+            }
+        }
+    }
 
     if ($conn->connect_error) {
         throw new RuntimeException("DB connection failed: " . $conn->connect_error);

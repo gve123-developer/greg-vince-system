@@ -1,7 +1,14 @@
 <?php
 
-if (!class_exists('Valet\Drivers\ValetDriver') && file_exists('C:/Program Files/Herd/resources/app.asar.unpacked/resources/valet/cli/Valet/Drivers/ValetDriver.php')) {
+if (class_exists('Valet\Drivers\ValetDriver') && !class_exists('ValetDriver')) {
+    class_alias('Valet\Drivers\ValetDriver', 'ValetDriver');
+}
+
+if (!class_exists('ValetDriver') && file_exists('C:/Program Files/Herd/resources/app.asar.unpacked/resources/valet/cli/Valet/Drivers/ValetDriver.php')) {
     require_once 'C:/Program Files/Herd/resources/app.asar.unpacked/resources/valet/cli/Valet/Drivers/ValetDriver.php';
+    if (class_exists('Valet\Drivers\ValetDriver') && !class_exists('ValetDriver')) {
+        class_alias('Valet\Drivers\ValetDriver', 'ValetDriver');
+    }
 }
 
 use Valet\Drivers\ValetDriver;
