@@ -7,16 +7,6 @@ node_modules/
 .env.local
 .env.*.local
 
-# Root junctions pointing to Downloads/Website/
-/api
-/includes
-/public
-/dist
-
-# Build output
-dist/
-build/
-
 # Logs
 *.log
 api/reset_emails.log
