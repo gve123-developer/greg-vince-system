@@ -20,6 +20,7 @@ export const speak = (input: VoiceMessage | VoiceMessage[], options?: { loop?: b
     const currentLoopId = isLoopingCount;
     const items = Array.isArray(input) ? input : [input];
     let index = 0;
+    let consecutiveErrors = 0;
 
     const speakItem = () => {
         if (currentLoopId !== isLoopingCount) return; // A newer call cancelled this
@@ -71,30 +72,48 @@ export const speak = (input: VoiceMessage | VoiceMessage[], options?: { loop?: b
 
         utterance.onend = () => {
             if (currentLoopId !== isLoopingCount) return;
+            consecutiveErrors = 0;
             index++;
-            // Apply pause before next message
-            if (pause > 0) {
-                speakTimeout = setTimeout(speakItem, pause);
-            } else {
-                speakItem();
-            }
+            // Apply pause before next message asynchronously
+            const delay = pause > 0 ? pause : 10;
+            speakTimeout = setTimeout(speakItem, delay);
         };
 
-        // Handle errors (e.g. if speech is blocked)
+        // Handle errors (e.g. if speech is blocked by browser policy)
         utterance.onerror = (e) => {
             if (currentLoopId !== isLoopingCount) return;
+
+            // If error is 'not-allowed', 'canceled', or 'interrupted', browser policy blocked speech
+            if (e.error === 'not-allowed' || e.error === 'canceled' || e.error === 'interrupted') {
+                console.warn(`Speech synthesis skipped (${e.error}). User interaction or permissions required.`);
+                stopSpeaking();
+                return;
+            }
+
+            consecutiveErrors++;
+            if (consecutiveErrors >= Math.max(3, items.length)) {
+                console.warn("Speech synthesis stopped due to repeated errors.");
+                stopSpeaking();
+                return;
+            }
+
             console.error("Speech synthesis error:", e);
-            // Try to continue to next item anyway
             index++;
-            speakItem();
+            speakTimeout = setTimeout(speakItem, 100);
         };
 
-        window.speechSynthesis.speak(utterance);
+        try {
+            window.speechSynthesis.speak(utterance);
+        } catch (err) {
+            console.warn("Speech synthesis trigger failed:", err);
+            stopSpeaking();
+        }
     };
 
     // Ensure voices are loaded (Chrome sometimes needs this)
     if (window.speechSynthesis.getVoices().length === 0) {
         window.speechSynthesis.onvoiceschanged = () => {
+            if (currentLoopId !== isLoopingCount) return;
             speakItem();
             window.speechSynthesis.onvoiceschanged = null;
         };
