@@ -43,7 +43,43 @@ if (str_ends_with($uri, '.php')) {
     }
 }
 
-// 3. Serve React SPA dist/index.html
+// 3. Serve Static Files (JS, CSS, images, json, icons, fonts) from dist/ or public/
+if ($uri !== '/' && $uri !== '') {
+    $candidates = [
+        __DIR__ . '/dist' . $uri,
+        __DIR__ . '/public' . $uri,
+        __DIR__ . $uri,
+    ];
+
+    foreach ($candidates as $file) {
+        if (file_exists($file) && !is_dir($file)) {
+            $ext = strtolower(pathinfo($file, PATHINFO_EXTENSION));
+            $mimeTypes = [
+                'js'    => 'application/javascript; charset=UTF-8',
+                'mjs'   => 'application/javascript; charset=UTF-8',
+                'css'   => 'text/css; charset=UTF-8',
+                'png'   => 'image/png',
+                'jpg'   => 'image/jpeg',
+                'jpeg'  => 'image/jpeg',
+                'gif'   => 'image/gif',
+                'svg'   => 'image/svg+xml',
+                'ico'   => 'image/x-icon',
+                'json'  => 'application/json; charset=UTF-8',
+                'woff'  => 'font/woff',
+                'woff2' => 'font/woff2',
+                'ttf'   => 'font/ttf',
+                'webp'  => 'image/webp',
+            ];
+            $contentType = $mimeTypes[$ext] ?? (function_exists('mime_content_type') ? mime_content_type($file) : 'application/octet-stream');
+            header("Content-Type: {$contentType}");
+            header("Content-Length: " . filesize($file));
+            readfile($file);
+            exit;
+        }
+    }
+}
+
+// 4. Serve React SPA dist/index.html
 if (file_exists(__DIR__ . '/dist/index.html')) {
     header('Content-Type: text/html; charset=UTF-8');
     readfile(__DIR__ . '/dist/index.html');
