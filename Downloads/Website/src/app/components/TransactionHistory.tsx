@@ -144,7 +144,7 @@ export function TransactionHistory({ currentUser }: TransactionHistoryProps) {
     const s = searchQuery.toLowerCase();
     const idMatch = String(t.id).includes(s);
     const cashierMatch = (t.cashier || '').toLowerCase().includes(s);
-    const itemsMatch = t.items && t.items.some(i => i.productName.toLowerCase().includes(s));
+    const itemsMatch = t.items && t.items.some(i => (i.productName || '').toLowerCase().includes(s));
 
     let dateMatch = true;
     if (dateFilter === 'today') dateMatch = isToday(t.date);
