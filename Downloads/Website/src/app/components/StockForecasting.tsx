@@ -357,7 +357,9 @@ export function StockForecasting({ products, transactions }: StockForecastingPro
                                                 </div>
                                             </TableCell>
                                             <TableCell className="px-3 py-4 text-right">
-                                                {forecast.reorderRecommendation > 0 ? (
+                                                {parseFloat(forecast.velocity) === 0 ? (
+                                                    <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest leading-none">INSUFFICIENT SALES DATA</span>
+                                                ) : forecast.reorderRecommendation > 0 ? (
                                                     <div className="inline-flex items-center gap-1.5 text-blue-700 bg-blue-50 border border-blue-100 px-2 py-0.5 rounded-full font-black text-[11px]">
                                                         +{forecast.reorderRecommendation}
                                                         <ArrowRight className="size-3" />
