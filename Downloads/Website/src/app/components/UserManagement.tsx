@@ -10,6 +10,7 @@ import { Badge } from '@/app/components/ui/badge';
 import { toast } from 'sonner';
 import { Plus, Edit, Trash2, Users, Eye, EyeOff } from 'lucide-react';
 import { ErrorBoundary } from '@/app/components/ErrorBoundary';
+import { logAuditAction } from '@/app/utils/auditUtils';
 
 interface UserManagementProps {
   currentUser: User;
@@ -97,6 +98,7 @@ export function UserManagement({ currentUser }: UserManagementProps) {
         setConfirmPassword('');
         setShowPassword(false);
         setShowConfirmPassword(false);
+        logAuditAction(currentUser.name, 'User Added', `Added new user: ${result.user.username}`);
         toast.success(result.message || 'User added successfully');
       } else {
         toast.error(result.message || 'Failed to add user to database');
@@ -157,6 +159,7 @@ export function UserManagement({ currentUser }: UserManagementProps) {
         setIsEditDialogOpen(false);
         setEditingUser(null);
         setFormData({});
+        logAuditAction(currentUser.name, 'User Updated', `Updated details for user: ${newLocalUser.username}`);
         toast.success('User updated successfully');
       } else {
         toast.error(result.message || 'Failed to update user');
@@ -192,8 +195,10 @@ export function UserManagement({ currentUser }: UserManagementProps) {
       .then(async res => {
         const result = await res.json();
         if (res.ok && result.success) {
+          const userToDelete = users.find(u => u.id === id);
           const updatedUsers = users.filter(u => u.id !== id);
           saveUsers(updatedUsers);
+          logAuditAction(currentUser.name, 'User Deleted', `Deleted user: ${userToDelete?.username || id}`);
           toast.success('User deleted successfully');
         } else {
           toast.error(result.message || 'Failed to delete user');
