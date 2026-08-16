@@ -114,6 +114,12 @@ export function POSSystem({ currentUser, products, onProductsChange }: POSSystem
       return;
     }
 
+    const days = getDaysRemaining(product.expiryDate);
+    if (days !== undefined && days < 0) {
+      toast.error('This product is expired');
+      return;
+    }
+
     const existingItem = cart.find(item => item.product.id === product.id);
 
     if (existingItem) {
