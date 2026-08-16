@@ -6,9 +6,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Button } from '@/app/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/app/components/ui/table';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell, AreaChart, Area } from 'recharts';
-import { TrendingUp, DollarSign, Package, ShoppingCart, Calendar, Download, AlertTriangle, Plus } from 'lucide-react';
+import { TrendingUp, DollarSign, Package, ShoppingCart, Calendar, Download, AlertTriangle, Plus, Calculator, BarChart3 } from 'lucide-react';
 import { ErrorBoundary } from '@/app/components/ErrorBoundary';
 import { logAuditAction } from '@/app/utils/auditUtils';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from '@/app/components/ui/dialog';
 
 interface ReportsProps {
   currentUser: User;
@@ -32,6 +33,8 @@ export function Reports({ currentUser }: ReportsProps) {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [losses, setLosses] = useState<LossEntry[]>([]);
   const [timeRange, setTimeRange] = useState('daily');
+  const [isZReadingOpen, setIsZReadingOpen] = useState(false);
+  const [isValuationOpen, setIsValuationOpen] = useState(false);
 
   useEffect(() => {
     loadData();
@@ -129,6 +132,49 @@ export function Reports({ currentUser }: ReportsProps) {
       }
       return lossDay >= cutoffDate;
     });
+  };
+
+  const calculateValuation = () => {
+    let totalCostValue = 0;
+    let totalRetailValue = 0;
+    products.forEach(p => {
+      const stock = Number(p.quantity) + Number(p.newStockQuantity || 0);
+      if (stock > 0) {
+        totalCostValue += stock * (Number(p.cost) || 0);
+        totalRetailValue += stock * (Number(p.price) || 0);
+      }
+    });
+    const potentialProfit = totalRetailValue - totalCostValue;
+    return { totalCostValue, totalRetailValue, potentialProfit };
+  };
+
+  const calculateZReading = () => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    let expectedCash = 0;
+    let otherPayments = 0;
+    let totalSales = 0;
+    let totalTransactions = 0;
+
+    transactions.forEach(t => {
+      if (t.status === 'voided') return;
+      const dateStr = t.date ? (t.date.includes('T') ? t.date : t.date.replace(' ', 'T')) : '';
+      const txDate = new Date(dateStr);
+      txDate.setHours(0, 0, 0, 0);
+      
+      if (txDate.getTime() === today.getTime()) {
+        totalSales += t.total;
+        totalTransactions++;
+        if (!t.paymentMethod || t.paymentMethod.toLowerCase() === 'cash') {
+          expectedCash += t.total;
+        } else {
+          otherPayments += t.total;
+        }
+      }
+    });
+
+    return { expectedCash, otherPayments, totalSales, totalTransactions };
   };
 
 
@@ -557,6 +603,20 @@ export function Reports({ currentUser }: ReportsProps) {
               </SelectContent>
             </Select>
             <Button
+              onClick={() => setIsZReadingOpen(true)}
+              className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm"
+            >
+              <Calculator className="size-4 mr-2" />
+              Z-Reading
+            </Button>
+            <Button
+              onClick={() => setIsValuationOpen(true)}
+              className="bg-teal-600 hover:bg-teal-700 text-white shadow-sm"
+            >
+              <BarChart3 className="size-4 mr-2" />
+              Valuation
+            </Button>
+            <Button
               onClick={exportReport}
               className="bg-red-600 hover:bg-red-700 text-white shadow-sm"
             >
@@ -869,6 +929,70 @@ export function Reports({ currentUser }: ReportsProps) {
           </Card>
         </ErrorBoundary>
       </div>
+
+      {/* Z-Reading Dialog */}
+      <Dialog open={isZReadingOpen} onOpenChange={setIsZReadingOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Calculator className="size-5 text-indigo-600" />
+              End-of-Day Z-Reading
+            </DialogTitle>
+            <DialogDescription>
+              Summary of today's expected cash drawer and logged transactions.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="flex justify-between items-center bg-gray-50 p-3 rounded-md border">
+              <span className="text-sm font-medium text-gray-500">Total Transactions Today:</span>
+              <span className="text-lg font-bold">{calculateZReading().totalTransactions}</span>
+            </div>
+            <div className="flex justify-between items-center bg-indigo-50 p-4 rounded-md border-2 border-indigo-200">
+              <span className="font-bold text-indigo-900">Total Expected Drawer Cash:</span>
+              <span className="text-2xl font-black text-indigo-700">{formatCurrency(calculateZReading().expectedCash)}</span>
+            </div>
+            <div className="flex justify-between items-center bg-green-50 p-3 rounded-md border-t-2 border-green-200 mt-2">
+              <span className="font-bold text-green-900">Total Sales Generated Today:</span>
+              <span className="text-xl font-bold text-green-700">{formatCurrency(calculateZReading().totalSales)}</span>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button onClick={() => setIsZReadingOpen(false)} className="w-full">Acknowledge Shift Close</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Valuation Report Dialog */}
+      <Dialog open={isValuationOpen} onOpenChange={setIsValuationOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <BarChart3 className="size-5 text-teal-600" />
+              Inventory Valuation Report
+            </DialogTitle>
+            <DialogDescription>
+              Calculation of total cost value and potential retail value of current stock.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="flex justify-between items-center bg-blue-50 p-4 rounded-md border-2 border-blue-200">
+              <span className="font-bold text-blue-900">Total Cost Value (Puhunan):</span>
+              <span className="text-xl font-black text-blue-700">{formatCurrency(calculateValuation().totalCostValue)}</span>
+            </div>
+            <div className="flex justify-between items-center bg-teal-50 p-4 rounded-md border-2 border-teal-200">
+              <span className="font-bold text-teal-900">Total Retail Value (Benta):</span>
+              <span className="text-xl font-black text-teal-700">{formatCurrency(calculateValuation().totalRetailValue)}</span>
+            </div>
+            <div className="flex justify-between items-center bg-green-50 p-3 rounded-md border-t-2 border-green-200 mt-2">
+              <span className="font-bold text-green-900">Total Potential Profit:</span>
+              <span className="text-lg font-bold text-green-700">{formatCurrency(calculateValuation().potentialProfit)}</span>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button onClick={() => setIsValuationOpen(false)} className="w-full">Close Report</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </ErrorBoundary>
   );
 }
