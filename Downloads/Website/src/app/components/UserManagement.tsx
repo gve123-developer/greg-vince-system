@@ -21,6 +21,8 @@ export function UserManagement({ currentUser }: UserManagementProps) {
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<User | null>(null);
+  const [userToDelete, setUserToDelete] = useState<User | null>(null);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [formData, setFormData] = useState<Partial<User>>({});
   const [showPassword, setShowPassword] = useState(false);
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -183,31 +185,40 @@ export function UserManagement({ currentUser }: UserManagementProps) {
       return;
     }
 
-    if (confirm('Are you sure you want to delete this user?')) {
-      fetch('/api/users.php', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          action: 'delete',
-          id: id
-        })
-      })
-      .then(async res => {
-        const result = await res.json();
-        if (res.ok && result.success) {
-          const userToDelete = users.find(u => u.id === id);
-          const updatedUsers = users.filter(u => u.id !== id);
-          saveUsers(updatedUsers);
-          logAuditAction(currentUser.name, 'User Deleted', `Deleted user: ${userToDelete?.username || id}`);
-          toast.success('User deleted successfully');
-        } else {
-          toast.error(result.message || 'Failed to delete user');
-        }
-      })
-      .catch(err => {
-        toast.error('Failed to connect to backend database');
-      });
+    const user = users.find(u => u.id === id);
+    if (user) {
+      setUserToDelete(user);
+      setIsDeleteDialogOpen(true);
     }
+  };
+
+  const confirmDeleteUser = () => {
+    if (!userToDelete) return;
+    
+    fetch('/api/users.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        action: 'delete',
+        id: userToDelete.id
+      })
+    })
+    .then(async res => {
+      const result = await res.json();
+      if (res.ok && result.success) {
+        const updatedUsers = users.filter(u => u.id !== userToDelete.id);
+        saveUsers(updatedUsers);
+        logAuditAction(currentUser.name, 'User Deleted', `Deleted user: ${userToDelete.username}`);
+        toast.success('User deleted successfully');
+        setIsDeleteDialogOpen(false);
+        setUserToDelete(null);
+      } else {
+        toast.error(result.message || 'Failed to delete user');
+      }
+    })
+    .catch(err => {
+      toast.error('Failed to connect to backend database');
+    });
   };
 
   const openEditDialog = (user: User) => {
@@ -448,6 +459,29 @@ export function UserManagement({ currentUser }: UserManagementProps) {
             </DialogContent>
           </Dialog>
         </ErrorBoundary>
+
+        {/* Delete Confirmation Dialog */}
+        <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+          <DialogContent className="sm:max-w-[400px]">
+            <DialogHeader>
+              <DialogTitle className="text-red-600 flex items-center gap-2">
+                <Trash2 className="size-5" />
+                Delete User
+              </DialogTitle>
+              <DialogDescription>
+                Are you sure you want to delete the user <strong>{userToDelete?.username}</strong>? This action cannot be undone.
+              </DialogDescription>
+            </DialogHeader>
+            <DialogFooter className="mt-4">
+              <Button variant="outline" onClick={() => setIsDeleteDialogOpen(false)}>
+                Cancel
+              </Button>
+              <Button variant="destructive" className="bg-red-600 hover:bg-red-700" onClick={confirmDeleteUser}>
+                Delete User
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
     </ErrorBoundary>
   );
