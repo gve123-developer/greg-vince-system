@@ -232,7 +232,7 @@ export function Reports({ currentUser }: ReportsProps) {
           productSales[item.productId] = {
             quantity: 0,
             revenue: 0,
-            name: item.productName
+            name: item.productName || 'Unknown Product'
           };
         }
         productSales[item.productId].quantity += item.quantity;
