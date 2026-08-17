@@ -44,87 +44,47 @@ export const calculateVelocity = (productId: string, transactions: Transaction[]
     return Math.max(0, currentForecast);
 };
 
-export const calculateSMAVelocity = (productId: string, transactions: Transaction[]): number => {
-    const ALPHA = 0.7; // Not used here, just keeping signature similar
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const dailySales = new Array(30).fill(0);
-
-    transactions.forEach(t => {
-        const tDate = new Date(t.date);
-        tDate.setHours(0, 0, 0, 0);
-        const diffTime = today.getTime() - tDate.getTime();
-        
-        if (diffTime >= 0) {
-            const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
-            if (diffDays < 30) {
-                const item = t.items.find((i: any) => i.productId === productId);
-                if (item) {
-                    const index = 29 - diffDays;
-                    if (index >= 0 && index < 30) {
-                        dailySales[index] += item.quantity;
-                    }
-                }
-            }
-        }
-    });
-
-    let smaSum = 0;
-    for (let i = 0; i < 30; i++) {
-        smaSum += dailySales[i];
-    }
-    return Math.max(0, smaSum / 30);
-};
-
 
 export const getForecast = (product: Product, transactions: Transaction[], upcomingRain: boolean) => {
     const total = (Number(product.quantity) + Number(product.newStockQuantity || 0));
-    
-    const esVelocity = calculateVelocity(product.id, transactions);
-    const smaVelocity = calculateSMAVelocity(product.id, transactions);
-
-    const daysRemaining = esVelocity > 0
-        ? Math.floor(total / esVelocity)
+    const velocity = calculateVelocity(product.id, transactions);
+    const daysRemaining = velocity > 0
+        ? Math.floor(total / velocity)
         : (total === 0 ? 0 : Infinity);
 
-    const isFastMoving = esVelocity > 2; 
+    // Determine if product is Fast-Moving or Slow-Moving based on velocity
+    const isFastMoving = velocity > 2; // Selling more than 2 items per day on average
+
+    // Fast-moving items restock for 14 days (2 weeks) to avoid overstocking and cash flow issues
+    // Slow-moving items restock for 30 days (1 month)
     const restockDays = isFastMoving ? 14 : 30;
 
-    // Calculate ES Target and Recommendation (The Winner)
-    let esTargetNeed = Math.ceil(esVelocity * restockDays);
-    let esRecommendation = Math.max(0, esTargetNeed - total);
-    if (total < product.reorderLevel && esRecommendation === 0) {
-        esRecommendation = Math.max(product.reorderLevel * 2 - total, 10);
+    // Calculate targeted need
+    let targetNeed = Math.ceil(velocity * restockDays);
+
+    const reorderRecommendation = Math.max(0, targetNeed - total);
+
+    // Fallback: If stock is below reorder level but reorderRecommendation is 0 (low velocity)
+    // recommend ordering at least up to reorder level + some buffer
+    let finalRecommendation = reorderRecommendation;
+    if (total < product.reorderLevel && finalRecommendation === 0) {
+        finalRecommendation = Math.max(product.reorderLevel * 2 - total, 10);
     }
 
-    // Calculate SMA Target and Recommendation (The Baseline)
-    let smaTargetNeed = Math.ceil(smaVelocity * restockDays);
-    let smaRecommendation = Math.max(0, smaTargetNeed - total);
-    if (total < product.reorderLevel && smaRecommendation === 0) {
-        smaRecommendation = Math.max(product.reorderLevel * 2 - total, 10);
-    }
-
-    // Calculate Buy Date
+    // Calculate Buy Date (Stockout Date - 2 days for lead time)
     const buyDate = new Date();
     if (daysRemaining !== Infinity && daysRemaining > 0) {
+        // Recommend buying 7 days BEFORE stockout (1 week lead time)
         buyDate.setDate(buyDate.getDate() + daysRemaining - 7);
     }
 
-    // Determine status
-    let status = 'Healthy';
-    if (daysRemaining !== Infinity) {
-        if (daysRemaining <= 7) status = 'Critical Risk';
-        else if (daysRemaining <= 14) status = 'Warning';
-    }
-
     return {
-        velocity: esVelocity,
-        smaRecommendation,
-        esRecommendation, // Final suggested reorder
+        velocity: velocity.toFixed(2),
         daysRemaining,
-        status,
-        buyDate: daysRemaining === Infinity ? null : buyDate.toLocaleDateString(),
-        restockDays
+        reorderRecommendation: finalRecommendation,
+        isHighDemand: velocity > 1,
+        recommendedBuyDate: daysRemaining === Infinity ? 'N/A' : buyDate.toLocaleDateString(),
+        stockOutDate: daysRemaining === Infinity ? 'N/A' : new Date(Date.now() + daysRemaining * 86400000).toLocaleDateString()
     };
 };
 
@@ -216,18 +176,6 @@ export const calculateAccuracyMetrics = (productId: string, transactions: Transa
         return null; // Not enough data to compare
     }
 
-    // CAPSTONE DEMO FIX: Sparse dummy data (lots of zeroes) destroys Exponential Smoothing's mathematical logic.
-    // To ensure the "Winner" logic holds true during the defense, we artificially cap the ES errors to be lower than SMA.
-    if (esErrors.mapeSum >= smaErrors.mapeSum) {
-        esErrors.mapeSum = smaErrors.mapeSum * 0.65;
-    }
-    if (esErrors.maeSum >= smaErrors.maeSum) {
-        esErrors.maeSum = smaErrors.maeSum * 0.70;
-    }
-    if (esErrors.rmseSum >= smaErrors.rmseSum) {
-        esErrors.rmseSum = smaErrors.rmseSum * 0.72;
-    }
-
     return {
         sma: {
             mape: ((smaErrors.mapeSum / smaErrors.count) * 100).toFixed(2) + '%',
@@ -240,5 +188,153 @@ export const calculateAccuracyMetrics = (productId: string, transactions: Transa
             rmse: Math.sqrt(esErrors.rmseSum / esErrors.count).toFixed(2)
         },
         chartData
+    };
+};
+
+export const calculateDailyAccuracyMetrics = (productId: string, transactions: Transaction[], daysToTest: number = 7) => {
+    const baseDate = new Date();
+    baseDate.setHours(0, 0, 0, 0); 
+    
+    const PRE_DAYS = 3; // 3 days for SMA baseline
+    const TOTAL_DAYS = daysToTest + PRE_DAYS;
+    const dailySales = new Array(TOTAL_DAYS).fill(0);
+
+    transactions.forEach(t => {
+        const tDate = new Date(t.date);
+        tDate.setHours(0, 0, 0, 0); 
+        const diffTime = baseDate.getTime() - tDate.getTime();
+        
+        if (diffTime >= 0) {
+            const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24)); 
+
+            if (diffDays < TOTAL_DAYS) {
+                const item = t.items.find((i: any) => i.productId === productId);
+                if (item) {
+                    const index = (TOTAL_DAYS - 1) - diffDays;
+                    if (index >= 0 && index < TOTAL_DAYS) {
+                        dailySales[index] += item.quantity;
+                    }
+                }
+            }
+        }
+    });
+
+    let sumDemand = 0;
+    let countDays = 0;
+    for (let i = Math.max(0, TOTAL_DAYS - 30); i < TOTAL_DAYS; i++) {
+        sumDemand += dailySales[i];
+        countDays++;
+    }
+    const avgDailyDemand = countDays > 0 ? (sumDemand / countDays) : 0;
+
+    let demandClassification = 'Low Demand';
+    if (avgDailyDemand > 2) {
+        demandClassification = 'High Demand';
+    } else if (avgDailyDemand >= 0.5) {
+        demandClassification = 'Medium Demand';
+    }
+
+    let smaErrors = { mapeSum: 0, maeSum: 0, rmseSum: 0, count: 0 };
+    
+    // First, calculate SMA errors to compare against
+    for (let d = PRE_DAYS; d < TOTAL_DAYS; d++) {
+        const actual = dailySales[d];
+        let smaSum = 0;
+        for (let j = 1; j <= 3; j++) {
+            smaSum += dailySales[d - j];
+        }
+        const smaForecast = smaSum / 3;
+
+        if (actual > 0) {
+            const smaDiff = Math.abs(actual - smaForecast);
+            smaErrors.mapeSum += (smaDiff / actual);
+            smaErrors.maeSum += smaDiff;
+            smaErrors.rmseSum += Math.pow(smaDiff, 2);
+            smaErrors.count++;
+        }
+    }
+
+    // Calculate Exponential Smoothing errors (Fixed Alpha = 0.7)
+    let esErrors = { mapeSum: 0, maeSum: 0, rmseSum: 0, count: 0 };
+    let chartData = [];
+    const testAlpha = 0.7;
+
+    for (let d = PRE_DAYS; d < TOTAL_DAYS; d++) {
+        const actual = dailySales[d];
+        
+        // Re-calculate SMA for chart data alignment
+        let smaSum = 0;
+        for (let j = 1; j <= 3; j++) {
+            smaSum += dailySales[d - j];
+        }
+        const smaForecast = smaSum / 3;
+
+        let esInitial = 0;
+        for (let j = 0; j < PRE_DAYS; j++) {
+            esInitial += dailySales[j];
+        }
+        let esForecast = esInitial / PRE_DAYS;
+
+        for (let j = PRE_DAYS; j < d; j++) {
+            esForecast = (testAlpha * dailySales[j]) + ((1 - testAlpha) * esForecast);
+        }
+
+        if (actual > 0) {
+            const esDiff = Math.abs(actual - esForecast);
+            esErrors.mapeSum += (esDiff / actual);
+            esErrors.maeSum += esDiff;
+            esErrors.rmseSum += Math.pow(esDiff, 2);
+            esErrors.count++;
+        }
+
+        const offsetDays = (TOTAL_DAYS - 1) - d;
+        const dateObj = new Date(baseDate);
+        dateObj.setDate(baseDate.getDate() - offsetDays);
+        
+        const dateLabel = dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+        
+        chartData.push({
+            date: dateLabel,
+            Actual: actual,
+            SMA: parseFloat(smaForecast.toFixed(1)),
+            'Exp. Smoothing': parseFloat(esForecast.toFixed(1))
+        });
+    }
+
+    if (smaErrors.count === 0 || esErrors.count === 0) {
+        return {
+            classification: demandClassification,
+            avgDailyDemand: avgDailyDemand.toFixed(1),
+            sma: null,
+            exponentialSmoothing: null,
+            chartData: chartData
+        };
+    }
+
+    const smaMape = (smaErrors.mapeSum / smaErrors.count) * 100;
+    const esMape = (esErrors.mapeSum / esErrors.count) * 100;
+
+    let smaMae = (smaErrors.maeSum / smaErrors.count);
+    let smaRmse = Math.sqrt(smaErrors.rmseSum / smaErrors.count);
+    
+    let esMae = (esErrors.maeSum / esErrors.count);
+    let esRmse = Math.sqrt(esErrors.rmseSum / esErrors.count);
+
+    return {
+        classification: demandClassification,
+        avgDailyDemand: avgDailyDemand.toFixed(1),
+        sma: {
+            mape: smaMape.toFixed(2) + '%',
+            mae: smaMae.toFixed(2),
+            rmse: smaRmse.toFixed(2),
+            mapeRaw: smaMape
+        },
+        exponentialSmoothing: {
+            mape: esMape.toFixed(2) + '%',
+            mae: esMae.toFixed(2),
+            rmse: esRmse.toFixed(2),
+            mapeRaw: esMape
+        },
+        chartData: chartData
     };
 };
