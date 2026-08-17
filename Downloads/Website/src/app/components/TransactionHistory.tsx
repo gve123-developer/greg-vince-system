@@ -119,6 +119,17 @@ export function TransactionHistory({ currentUser }: TransactionHistoryProps) {
       d.getFullYear() === today.getFullYear();
   };
 
+  const isThisWeek = (dateString: string) => {
+    const d = parseDate(dateString);
+    const today = new Date();
+    
+    const lastWeek = new Date(today);
+    lastWeek.setDate(today.getDate() - 7);
+    lastWeek.setHours(0, 0, 0, 0);
+
+    return d >= lastWeek && d <= today;
+  };
+
   const isThisMonth = (dateString: string) => {
     const d = parseDate(dateString);
     const today = new Date();
@@ -148,6 +159,7 @@ export function TransactionHistory({ currentUser }: TransactionHistoryProps) {
 
     let dateMatch = true;
     if (dateFilter === 'today') dateMatch = isToday(t.date);
+    else if (dateFilter === 'week') dateMatch = isThisWeek(t.date);
     else if (dateFilter === 'month') dateMatch = isThisMonth(t.date);
 
     return (idMatch || cashierMatch || itemsMatch) && dateMatch;
@@ -358,6 +370,7 @@ export function TransactionHistory({ currentUser }: TransactionHistoryProps) {
               <SelectContent>
                 <SelectItem value="all">All Time</SelectItem>
                 <SelectItem value="today">Today</SelectItem>
+                <SelectItem value="week">Weekly (Last 7 Days)</SelectItem>
                 <SelectItem value="month">This Month</SelectItem>
               </SelectContent>
             </Select>

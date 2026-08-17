@@ -103,17 +103,11 @@ export function ExpiryManagement({ currentUser, products, onProductsChange }: Ex
                 const now = new Date();
 
                 if (expiryTimeFilter === 'week') {
-                    const currentDay = now.getDay();
-                    const distanceToMonday = currentDay === 0 ? 6 : currentDay - 1;
-                    const monday = new Date(now);
-                    monday.setDate(now.getDate() - distanceToMonday);
-                    monday.setHours(0, 0, 0, 0);
+                    const lastWeek = new Date(now);
+                    lastWeek.setDate(now.getDate() - 7);
+                    lastWeek.setHours(0, 0, 0, 0);
 
-                    const sunday = new Date(monday);
-                    sunday.setDate(monday.getDate() + 6);
-                    sunday.setHours(23, 59, 59, 999);
-
-                    if (expiryDate < monday || expiryDate > sunday) {
+                    if (expiryDate < lastWeek || expiryDate > now) {
                         return false;
                     }
                 } else if (expiryTimeFilter === 'month') {
@@ -302,7 +296,7 @@ export function ExpiryManagement({ currentUser, products, onProductsChange }: Ex
                                             </SelectTrigger>
                                             <SelectContent>
                                                 <SelectItem value="all">All Time</SelectItem>
-                                                <SelectItem value="week">This Week</SelectItem>
+                                                <SelectItem value="week">Weekly (Last 7 Days)</SelectItem>
                                                 <SelectItem value="month">This Month</SelectItem>
                                                 <SelectItem value="year">This Year</SelectItem>
                                             </SelectContent>
