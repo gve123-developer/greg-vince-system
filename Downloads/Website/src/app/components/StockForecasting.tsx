@@ -183,7 +183,7 @@ export function StockForecasting({ products, transactions }: StockForecastingPro
                                                 itemStyle={{ fontSize: '12px', fontWeight: 'bold' }}
                                                 labelStyle={{ fontSize: '10px', color: '#6b7280', textTransform: 'uppercase', fontWeight: 'bold' }}
                                             />
-                                            <Legend wrapperStyle={{ fontSize: '11px', paddingTop: '10px' }} />
+                                            <Legend verticalAlign="top" height={36} wrapperStyle={{ fontSize: '12px', fontWeight: 'bold', paddingBottom: '10px' }} />
                                             <Line type="monotone" dataKey="Actual" stroke="#111827" strokeWidth={3} dot={false} activeDot={{ r: 4 }} />
                                             <Line type="monotone" dataKey="SMA" stroke="#9ca3af" strokeWidth={2} strokeDasharray="5 5" dot={false} />
                                             <Line type="monotone" dataKey="Exp. Smoothing" stroke="#4f46e5" strokeWidth={3} dot={false} activeDot={{ r: 4 }} />
