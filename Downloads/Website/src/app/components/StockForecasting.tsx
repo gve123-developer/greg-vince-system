@@ -188,21 +188,7 @@ export function StockForecasting({ products, transactions }: StockForecastingPro
                                 </div>
                             )}
 
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
-                                <div className="space-y-3 border rounded-lg p-5 bg-gray-50 flex flex-col justify-center">
-                                    <h3 className="font-black text-gray-700 text-center uppercase tracking-wider text-sm border-b pb-2">Baseline: SMA</h3>
-                                    <p className="text-gray-600 text-sm text-center font-medium leading-relaxed">
-                                        Ito yung hula na recommendation base sa simpleng average ng mga nakaraang benta. Madalas itong huli at mabagal mag-adjust kapag may biglaang pagbabago sa demand.
-                                    </p>
-                                </div>
-                                <div className="space-y-3 border-2 border-indigo-200 rounded-lg p-5 bg-indigo-50/50 relative overflow-hidden flex flex-col justify-center">
-                                    <div className="absolute -right-6 -top-6 bg-green-500 text-white text-[9px] font-black px-8 py-1 rotate-45 transform origin-bottom-left uppercase tracking-widest shadow-sm">Winner</div>
-                                    <h3 className="font-black text-indigo-900 text-center uppercase tracking-wider text-sm border-b border-indigo-100 pb-2">Custom Algorithmic Forecasting (Exp. Smoothing)</h3>
-                                    <p className="text-indigo-800 text-sm text-center font-bold leading-relaxed">
-                                        Base sa dalawa, mas OK ang Exponential Smoothing dahil mabilis itong maka-detect at mag-adjust sa biglaang pagtaas o pagbaba ng benta. Ito ang ginagamit na Final Recommendation ng system.
-                                    </p>
-                                </div>
-                            </div>
+
                         </CardContent>
                     </Card>
                 )}
