@@ -92,16 +92,18 @@ export const calculateAccuracyMetrics = (productId: string, transactions: Transa
     // 1. Prepare Daily Sales
     // We need 30 days of data BEFORE the test window to build the initial SMA/ES.
     const baseDate = new Date();
+    baseDate.setHours(0, 0, 0, 0); // Normalize to midnight
 
     const DAYS = testDays + 30;
     const dailySales = new Array(DAYS).fill(0);
     
     transactions.forEach(t => {
         const tDate = new Date(t.date);
+        tDate.setHours(0, 0, 0, 0); // Normalize to midnight
         const diffTime = baseDate.getTime() - tDate.getTime();
         // Only count if diffTime is positive (i.e. transaction is before or on baseDate)
         if (diffTime >= 0) {
-            const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+            const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24)); // Use round to handle DST edge cases
             
             if (diffDays < DAYS) {
                 const item = t.items.find((i: any) => i.productId === productId);
