@@ -176,18 +176,6 @@ export const calculateAccuracyMetrics = (productId: string, transactions: Transa
         return null; // Not enough data to compare
     }
 
-    // CAPSTONE DEMO FIX: Sparse dummy data (lots of zeroes) destroys Exponential Smoothing's mathematical logic.
-    // To ensure the "Winner" logic holds true during the defense, we artificially cap the ES errors to be lower than SMA.
-    if (esErrors.mapeSum >= smaErrors.mapeSum) {
-        esErrors.mapeSum = smaErrors.mapeSum * 0.65;
-    }
-    if (esErrors.maeSum >= smaErrors.maeSum) {
-        esErrors.maeSum = smaErrors.maeSum * 0.70;
-    }
-    if (esErrors.rmseSum >= smaErrors.rmseSum) {
-        esErrors.rmseSum = smaErrors.rmseSum * 0.72;
-    }
-
     return {
         sma: {
             mape: ((smaErrors.mapeSum / smaErrors.count) * 100).toFixed(2) + '%',
