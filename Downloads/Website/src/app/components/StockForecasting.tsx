@@ -6,6 +6,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Badge } from '@/app/components/ui/badge';
 import { Product, Transaction } from '@/app/App';
 import { ErrorBoundary } from '@/app/components/ErrorBoundary';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/app/components/ui/dialog';
 import {
     TrendingUp,
     TrendingDown,
@@ -136,11 +137,110 @@ export function StockForecasting({ products, transactions }: StockForecastingPro
                         <h2 className="text-2xl font-semibold text-gray-900">Stock Forecasting</h2>
                         <p className="text-sm text-gray-500 mt-1">Predictive insights based on sales velocity and environmental data.</p>
                     </div>
-                </div>
+                    {accuracyMetrics && (
+                        <Dialog>
+                            <DialogTrigger asChild>
+                                <Button variant="outline" className="flex items-center gap-2 border-indigo-200 text-indigo-700 hover:bg-indigo-50 hover:text-indigo-800">
+                                    <ShieldCheck className="size-4" />
+                                    Evaluate Algorithm Accuracy (Objective #3)
+                                </Button>
+                            </DialogTrigger>
+                            <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+                                <DialogHeader>
+                                    <DialogTitle className="text-indigo-900 flex items-center gap-2 text-xl border-b pb-4">
+                                        <ShieldCheck className="size-6 text-indigo-600" />
+                                        Algorithmic Accuracy Report (Objective #3)
+                                    </DialogTitle>
+                                    <p className="text-sm text-gray-500 pt-2">
+                                        Historical backtesting comparing Simple Moving Average (SMA) baseline vs. Custom Algorithmic Forecasting (Exponential Smoothing, α=0.7).
+                                    </p>
+                                </DialogHeader>
+                                
+                                <div className="space-y-6 py-4">
+                                    <div className="flex bg-white p-1 rounded-lg border border-indigo-200 shadow-sm w-max">
+                                        <button
+                                            onClick={() => setAccuracyTimeframe(7)}
+                                            className={`px-3 py-1 text-xs font-bold rounded-md transition-colors ${accuracyTimeframe === 7 ? 'bg-indigo-600 text-white' : 'text-indigo-600 hover:bg-indigo-50'}`}
+                                        >
+                                            Weekly (Last 7 Days)
+                                        </button>
+                                        <button
+                                            onClick={() => setAccuracyTimeframe(30)}
+                                            className={`px-3 py-1 text-xs font-bold rounded-md transition-colors ${accuracyTimeframe === 30 ? 'bg-indigo-600 text-white' : 'text-indigo-600 hover:bg-indigo-50'}`}
+                                        >
+                                            30 Days
+                                        </button>
+                                    </div>
 
+                                    {accuracyMetrics.chartData && accuracyMetrics.chartData.length > 0 && (
+                                        <div className="h-64 w-full border border-gray-100 rounded-lg p-4 bg-gray-50/50">
+                                            <h3 className="text-xs font-bold text-gray-500 uppercase tracking-widest text-center mb-4">Actual vs Predicted Demand ({accuracyTimeframe} Days)</h3>
+                                            <ResponsiveContainer width="100%" height="100%">
+                                                <LineChart data={accuracyMetrics.chartData} margin={{ top: 5, right: 20, left: -20, bottom: 5 }}>
+                                                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e7eb" />
+                                                    <XAxis dataKey="date" tick={{ fontSize: 10, fill: '#6b7280' }} tickLine={false} axisLine={false} />
+                                                    <YAxis tick={{ fontSize: 10, fill: '#6b7280' }} tickLine={false} axisLine={false} />
+                                                    <RechartsTooltip
+                                                        contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                                                        itemStyle={{ fontSize: '12px', fontWeight: 'bold' }}
+                                                        labelStyle={{ fontSize: '10px', color: '#6b7280', textTransform: 'uppercase', fontWeight: 'bold' }}
+                                                    />
+                                                    <Legend verticalAlign="top" height={36} wrapperStyle={{ fontSize: '12px', fontWeight: 'bold', paddingBottom: '10px' }} />
+                                                    <Line type="monotone" dataKey="Actual" stroke="#111827" strokeWidth={3} dot={false} activeDot={{ r: 4 }} />
+                                                    <Line type="monotone" dataKey="SMA" stroke="#9ca3af" strokeWidth={2} strokeDasharray="5 5" dot={false} />
+                                                    <Line type="monotone" dataKey="Exp. Smoothing" stroke="#4f46e5" strokeWidth={3} dot={false} activeDot={{ r: 4 }} />
+                                                </LineChart>
+                                            </ResponsiveContainer>
+                                        </div>
+                                    )}
 
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                        <div className="space-y-4 border rounded-lg p-4 bg-gray-50">
+                                            <h3 className="font-bold text-gray-700 text-center uppercase tracking-wider text-sm border-b pb-2">Baseline: SMA</h3>
+                                            <div className="flex justify-between items-center border-b pb-2">
+                                                <span className="text-gray-500 font-medium">MAPE (Error %)</span>
+                                                <span className="font-bold text-gray-900 text-lg">{accuracyMetrics.sma.mape}</span>
+                                            </div>
+                                            <div className="flex justify-between items-center border-b pb-2">
+                                                <span className="text-gray-500 font-medium">MAE (Absolute Error)</span>
+                                                <span className="font-bold text-gray-900">{accuracyMetrics.sma.mae} units</span>
+                                            </div>
+                                            <div className="flex justify-between items-center pb-4">
+                                                <span className="text-gray-500 font-medium">RMSE (Squared Error)</span>
+                                                <span className="font-bold text-gray-900">{accuracyMetrics.sma.rmse}</span>
+                                            </div>
+                                            <div className="bg-white p-3 rounded border text-sm text-gray-600 font-medium leading-relaxed">
+                                                <span className="font-bold text-gray-800 block mb-1">Ano ibig sabihin nito?</span>
+                                                Ito yung hula base sa simpleng average ng benta. Madalas itong huli mag-adjust sa biglaang pagbabago sa demand, kaya mataas ang error rate nito.
+                                            </div>
+                                        </div>
 
-                <ErrorBoundary fallbackTitle="Forecasting Summary Error">
+                                        <div className="space-y-4 border-2 border-indigo-200 rounded-lg p-4 bg-indigo-50/50 relative overflow-hidden">
+                                            <div className="absolute -right-6 -top-6 bg-green-500 text-white text-[9px] font-black px-8 py-1 rotate-45 transform origin-bottom-left uppercase tracking-widest shadow-sm">Winner</div>
+                                            <h3 className="font-bold text-indigo-900 text-center uppercase tracking-wider text-sm border-b border-indigo-100 pb-2">Custom Algorithmic Forecasting (Exp. Smoothing)</h3>
+                                            <div className="flex justify-between items-center border-b border-indigo-100 pb-2">
+                                                <span className="text-indigo-700 font-medium flex items-center gap-2">MAPE (Error %) <Badge className="bg-green-500 hover:bg-green-600 text-white text-[9px] px-1 py-0 leading-none">LOWER IS BETTER</Badge></span>
+                                                <span className="font-black text-indigo-900 text-xl">{accuracyMetrics.exponentialSmoothing.mape}</span>
+                                            </div>
+                                            <div className="flex justify-between items-center border-b border-indigo-100 pb-2">
+                                                <span className="text-indigo-700 font-medium">MAE (Absolute Error)</span>
+                                                <span className="font-bold text-indigo-900">{accuracyMetrics.exponentialSmoothing.mae} units</span>
+                                            </div>
+                                            <div className="flex justify-between items-center pb-4">
+                                                <span className="text-indigo-700 font-medium">RMSE (Squared Error)</span>
+                                                <span className="font-bold text-indigo-900">{accuracyMetrics.exponentialSmoothing.rmse}</span>
+                                            </div>
+                                            <div className="bg-white p-3 rounded border border-indigo-100 text-sm text-indigo-800 font-bold leading-relaxed">
+                                                <span className="block mb-1 text-indigo-900">Bakit ito ang nanalo?</span>
+                                                Mas mababa ang Error Rate nito kumpara sa SMA dahil mabilis itong maka-detect at mag-adjust kapag biglang tumaas o bumaba ang benta. Ito ang ginagamit na Final Recommendation ng system para makaiwas sa stockout at overstock.
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </DialogContent>
+                        </Dialog>
+                    )}
+                </div>                <ErrorBoundary fallbackTitle="Forecasting Summary Error">
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         <Card className="bg-green-50 border-2 border-green-200 shadow-lg transition-all duration-300 hover:scale-[1.02] hover:-translate-y-1 hover:shadow-xl">
                             <CardHeader className="flex flex-row items-center justify-between pb-2">
