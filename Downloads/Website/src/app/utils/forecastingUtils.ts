@@ -125,9 +125,6 @@ export const calculateAccuracyMetrics = (productId: string, transactions: Transa
     for (let t = 30; t < DAYS; t++) {
         const actual = dailySales[t];
         
-        // Skip days with 0 actual sales for MAPE computation to avoid Infinity
-        if (actual === 0) continue;
-
         // Calculate SMA (average of previous 30 days)
         let smaSum = 0;
         for (let j = 1; j <= 30; j++) {
@@ -147,20 +144,22 @@ export const calculateAccuracyMetrics = (productId: string, transactions: Transa
             esForecast = (ALPHA * dailySales[j]) + ((1 - ALPHA) * esForecast);
         }
 
-        // Calculate Errors
-        const smaDiff = Math.abs(actual - smaForecast);
-        smaErrors.mapeSum += (smaDiff / actual);
-        smaErrors.maeSum += smaDiff;
-        smaErrors.rmseSum += Math.pow(smaDiff, 2);
-        smaErrors.count++;
+        // Calculate Errors only if actual > 0 (avoids Infinity in MAPE)
+        if (actual > 0) {
+            const smaDiff = Math.abs(actual - smaForecast);
+            smaErrors.mapeSum += (smaDiff / actual);
+            smaErrors.maeSum += smaDiff;
+            smaErrors.rmseSum += Math.pow(smaDiff, 2);
+            smaErrors.count++;
 
-        const esDiff = Math.abs(actual - esForecast);
-        esErrors.mapeSum += (esDiff / actual);
-        esErrors.maeSum += esDiff;
-        esErrors.rmseSum += Math.pow(esDiff, 2);
-        esErrors.count++;
+            const esDiff = Math.abs(actual - esForecast);
+            esErrors.mapeSum += (esDiff / actual);
+            esErrors.maeSum += esDiff;
+            esErrors.rmseSum += Math.pow(esDiff, 2);
+            esErrors.count++;
+        }
         
-        // Add to chart data
+        // Add to chart data ALWAYS (even if actual is 0) so lines can connect
         const dateObj = new Date(baseDate);
         dateObj.setDate(baseDate.getDate() - ((DAYS - 1) - t));
         chartData.push({
