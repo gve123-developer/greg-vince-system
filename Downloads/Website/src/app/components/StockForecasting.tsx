@@ -145,7 +145,7 @@ export function StockForecasting({ products, transactions }: StockForecastingPro
                                     Evaluate Algorithm Accuracy
                                 </Button>
                             </DialogTrigger>
-                            <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+                            <DialogContent className="max-w-[85vw] max-h-[90vh] overflow-y-auto w-full">
                                 <DialogHeader>
                                     <DialogTitle className="text-indigo-900 flex items-center gap-2 text-xl border-b pb-4">
                                         <ShieldCheck className="size-6 text-indigo-600" />
