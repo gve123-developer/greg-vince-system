@@ -188,37 +188,19 @@ export function StockForecasting({ products, transactions }: StockForecastingPro
                                 </div>
                             )}
 
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <div className="space-y-4 border rounded-lg p-4 bg-gray-50">
-                                    <h3 className="font-bold text-gray-700 text-center uppercase tracking-wider text-sm">Baseline: SMA</h3>
-                                    <div className="flex justify-between items-center border-b pb-2">
-                                        <span className="text-gray-500 font-medium">MAPE (Error %)</span>
-                                        <span className="font-bold text-gray-900 text-lg">{accuracyMetrics.sma.mape}</span>
-                                    </div>
-                                    <div className="flex justify-between items-center border-b pb-2">
-                                        <span className="text-gray-500 font-medium">MAE (Absolute Error)</span>
-                                        <span className="font-bold text-gray-900">{accuracyMetrics.sma.mae} units</span>
-                                    </div>
-                                    <div className="flex justify-between items-center">
-                                        <span className="text-gray-500 font-medium">RMSE (Squared Error)</span>
-                                        <span className="font-bold text-gray-900">{accuracyMetrics.sma.rmse}</span>
-                                    </div>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+                                <div className="space-y-3 border rounded-lg p-5 bg-gray-50 flex flex-col justify-center">
+                                    <h3 className="font-black text-gray-700 text-center uppercase tracking-wider text-sm border-b pb-2">Baseline: SMA</h3>
+                                    <p className="text-gray-600 text-sm text-center font-medium leading-relaxed">
+                                        Ito yung hula na recommendation base sa simpleng average ng mga nakaraang benta. Madalas itong huli at mabagal mag-adjust kapag may biglaang pagbabago sa demand.
+                                    </p>
                                 </div>
-                                <div className="space-y-4 border-2 border-indigo-200 rounded-lg p-4 bg-indigo-50/50 relative overflow-hidden">
+                                <div className="space-y-3 border-2 border-indigo-200 rounded-lg p-5 bg-indigo-50/50 relative overflow-hidden flex flex-col justify-center">
                                     <div className="absolute -right-6 -top-6 bg-green-500 text-white text-[9px] font-black px-8 py-1 rotate-45 transform origin-bottom-left uppercase tracking-widest shadow-sm">Winner</div>
-                                    <h3 className="font-bold text-indigo-900 text-center uppercase tracking-wider text-sm">Custom Algorithmic Forecasting (Exp. Smoothing)</h3>
-                                    <div className="flex justify-between items-center border-b border-indigo-100 pb-2">
-                                        <span className="text-indigo-700 font-medium flex items-center gap-2">MAPE (Error %) <Badge className="bg-green-500 hover:bg-green-600 text-white text-[9px] px-1 py-0 leading-none">LOWER IS BETTER</Badge></span>
-                                        <span className="font-black text-indigo-900 text-xl">{accuracyMetrics.exponentialSmoothing.mape}</span>
-                                    </div>
-                                    <div className="flex justify-between items-center border-b border-indigo-100 pb-2">
-                                        <span className="text-indigo-700 font-medium">MAE (Absolute Error)</span>
-                                        <span className="font-bold text-indigo-900">{accuracyMetrics.exponentialSmoothing.mae} units</span>
-                                    </div>
-                                    <div className="flex justify-between items-center">
-                                        <span className="text-indigo-700 font-medium">RMSE (Squared Error)</span>
-                                        <span className="font-bold text-indigo-900">{accuracyMetrics.exponentialSmoothing.rmse}</span>
-                                    </div>
+                                    <h3 className="font-black text-indigo-900 text-center uppercase tracking-wider text-sm border-b border-indigo-100 pb-2">Custom Algorithmic Forecasting (Exp. Smoothing)</h3>
+                                    <p className="text-indigo-800 text-sm text-center font-bold leading-relaxed">
+                                        Base sa dalawa, mas OK ang Exponential Smoothing dahil mabilis itong maka-detect at mag-adjust sa biglaang pagtaas o pagbaba ng benta. Ito ang ginagamit na Final Recommendation ng system.
+                                    </p>
                                 </div>
                             </div>
                         </CardContent>
