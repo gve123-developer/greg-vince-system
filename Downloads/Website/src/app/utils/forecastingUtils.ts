@@ -91,21 +91,25 @@ export const getForecast = (product: Product, transactions: Transaction[], upcom
 export const calculateAccuracyMetrics = (productId: string, transactions: Transaction[], testDays: number = 30) => {
     // 1. Prepare Daily Sales
     // We need 30 days of data BEFORE the test window to build the initial SMA/ES.
-    const today = new Date();
+    const baseDate = new Date();
+
     const DAYS = testDays + 30;
     const dailySales = new Array(DAYS).fill(0);
     
     transactions.forEach(t => {
         const tDate = new Date(t.date);
-        const diffTime = Math.abs(today.getTime() - tDate.getTime());
-        const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-        
-        if (diffDays < DAYS) {
-            const item = t.items.find((i: any) => i.productId === productId);
-            if (item) {
-                const index = (DAYS - 1) - diffDays;
-                if (index >= 0 && index < DAYS) {
-                    dailySales[index] += item.quantity;
+        const diffTime = baseDate.getTime() - tDate.getTime();
+        // Only count if diffTime is positive (i.e. transaction is before or on baseDate)
+        if (diffTime >= 0) {
+            const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+            
+            if (diffDays < DAYS) {
+                const item = t.items.find((i: any) => i.productId === productId);
+                if (item) {
+                    const index = (DAYS - 1) - diffDays;
+                    if (index >= 0 && index < DAYS) {
+                        dailySales[index] += item.quantity;
+                    }
                 }
             }
         }
@@ -157,8 +161,8 @@ export const calculateAccuracyMetrics = (productId: string, transactions: Transa
         esErrors.count++;
         
         // Add to chart data
-        const dateObj = new Date(today);
-        dateObj.setDate(today.getDate() - ((DAYS - 1) - t));
+        const dateObj = new Date(baseDate);
+        dateObj.setDate(baseDate.getDate() - ((DAYS - 1) - t));
         chartData.push({
             date: dateObj.toLocaleDateString([], { month: 'short', day: 'numeric' }),
             Actual: actual,
