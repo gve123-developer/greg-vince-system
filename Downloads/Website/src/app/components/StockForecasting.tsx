@@ -138,60 +138,7 @@ export function StockForecasting({ products, transactions }: StockForecastingPro
                     </div>
                 </div>
 
-                {accuracyMetrics && (
-                    <Card className="bg-white border-2 border-indigo-200 shadow-md mt-6">
-                        <CardHeader className="bg-indigo-50 border-b border-indigo-100 pb-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
-                            <div>
-                                <CardTitle className="text-indigo-900 flex items-center gap-2">
-                                    <ShieldCheck className="size-5 text-indigo-600" />
-                                    Algorithmic Accuracy Report (Objective #3)
-                                </CardTitle>
-                                <CardDescription className="text-indigo-700 mt-1">
-                                    Historical backtesting comparing Simple Moving Average (SMA) baseline vs. Custom Algorithmic Forecasting (Exponential Smoothing, α=0.7).
-                                </CardDescription>
-                            </div>
-                            <div className="flex bg-white p-1 rounded-lg border border-indigo-200 shadow-sm">
-                                <button
-                                    onClick={() => setAccuracyTimeframe(7)}
-                                    className={`px-3 py-1 text-xs font-bold rounded-md transition-colors ${accuracyTimeframe === 7 ? 'bg-indigo-600 text-white' : 'text-indigo-600 hover:bg-indigo-50'}`}
-                                >
-                                    Weekly (Last 7 Days)
-                                </button>
-                                <button
-                                    onClick={() => setAccuracyTimeframe(30)}
-                                    className={`px-3 py-1 text-xs font-bold rounded-md transition-colors ${accuracyTimeframe === 30 ? 'bg-indigo-600 text-white' : 'text-indigo-600 hover:bg-indigo-50'}`}
-                                >
-                                    30 Days
-                                </button>
-                            </div>
-                        </CardHeader>
-                        <CardContent className="pt-6 space-y-6">
-                            {accuracyMetrics.chartData && accuracyMetrics.chartData.length > 0 && (
-                                <div className="h-64 w-full border border-gray-100 rounded-lg p-4 bg-gray-50/50">
-                                    <h3 className="text-xs font-bold text-gray-500 uppercase tracking-widest text-center mb-4">Actual vs Predicted Demand ({accuracyTimeframe} Days)</h3>
-                                    <ResponsiveContainer width="100%" height="100%">
-                                        <LineChart data={accuracyMetrics.chartData} margin={{ top: 5, right: 20, left: -20, bottom: 5 }}>
-                                            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e7eb" />
-                                            <XAxis dataKey="date" tick={{ fontSize: 10, fill: '#6b7280' }} tickLine={false} axisLine={false} />
-                                            <YAxis tick={{ fontSize: 10, fill: '#6b7280' }} tickLine={false} axisLine={false} />
-                                            <RechartsTooltip
-                                                contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
-                                                itemStyle={{ fontSize: '12px', fontWeight: 'bold' }}
-                                                labelStyle={{ fontSize: '10px', color: '#6b7280', textTransform: 'uppercase', fontWeight: 'bold' }}
-                                            />
-                                            <Legend verticalAlign="top" height={36} wrapperStyle={{ fontSize: '12px', fontWeight: 'bold', paddingBottom: '10px' }} />
-                                            <Line type="monotone" dataKey="Actual" stroke="#111827" strokeWidth={3} dot={false} activeDot={{ r: 4 }} />
-                                            <Line type="monotone" dataKey="SMA" stroke="#9ca3af" strokeWidth={2} strokeDasharray="5 5" dot={false} />
-                                            <Line type="monotone" dataKey="Exp. Smoothing" stroke="#4f46e5" strokeWidth={3} dot={false} activeDot={{ r: 4 }} />
-                                        </LineChart>
-                                    </ResponsiveContainer>
-                                </div>
-                            )}
 
-
-                        </CardContent>
-                    </Card>
-                )}
 
                 <ErrorBoundary fallbackTitle="Forecasting Summary Error">
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
