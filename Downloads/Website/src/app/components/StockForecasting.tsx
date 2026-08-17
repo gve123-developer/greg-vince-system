@@ -159,7 +159,7 @@ export function StockForecasting({ products, transactions }: StockForecastingPro
                                     onClick={() => setAccuracyTimeframe(7)}
                                     className={`px-3 py-1 text-xs font-bold rounded-md transition-colors ${accuracyTimeframe === 7 ? 'bg-indigo-600 text-white' : 'text-indigo-600 hover:bg-indigo-50'}`}
                                 >
-                                    1 Week
+                                    Weekly (Last 7 Days)
                                 </button>
                                 <button 
                                     onClick={() => setAccuracyTimeframe(30)}
@@ -293,9 +293,8 @@ export function StockForecasting({ products, transactions }: StockForecastingPro
                                     <TableHead className="px-1 py-3 font-black text-gray-700 uppercase text-[9px] text-center">Current Stock</TableHead>
                                     <TableHead className="px-1 py-3 font-black text-gray-700 uppercase text-[9px] text-center">Stock Status</TableHead>
                                     <TableHead className="px-1 py-3 font-black text-gray-700 uppercase text-[9px] text-center text-red-600">Days Left</TableHead>
-                                    <TableHead className="px-1 py-3 font-black text-gray-700 uppercase text-[9px] text-center">Stockout Date</TableHead>
-                                    <TableHead className="px-1 py-3 font-black text-gray-700 uppercase text-[9px] text-center">Reorder Date</TableHead>
-                                    <TableHead className="px-2 py-3 font-black text-gray-700 uppercase text-[9px] text-right">Recommendation</TableHead>
+                                    <TableHead className="px-1 py-3 font-black text-gray-400 uppercase text-[9px] text-center border-l border-gray-200">SMA (Baseline)</TableHead>
+                                    <TableHead className="px-2 py-3 font-black text-indigo-700 uppercase text-[9px] text-center">Exp. Smoothing (Winner)</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody className="divide-y divide-gray-200">
@@ -344,24 +343,23 @@ export function StockForecasting({ products, transactions }: StockForecastingPro
                                                     {(Number(p.quantity) + Number(p.newStockQuantity || 0)) === 0 ? '0' : ((forecast as any).daysRemaining === Infinity ? 'STABLE' : (forecast as any).daysRemaining)}
                                                 </span>
                                             </TableCell>
-                                            <TableCell className="px-6 py-4 border-r border-gray-200 text-center">
-                                                <span className="text-xs font-mono font-bold text-gray-600 whitespace-nowrap uppercase">
-                                                    {(forecast as any).stockOutDate !== 'N/A' ? new Date((forecast as any).stockOutDate).toLocaleDateString([], { year: 'numeric', month: 'short', day: 'numeric' }) : 'SUFFICIENT'}
-                                                </span>
-                                            </TableCell>
-                                            <TableCell className="px-6 py-4 border-r border-gray-200 text-center">
-                                                <div className="flex flex-col">
-                                                    <span className={`text-xs font-black ${((forecast as any).daysRemaining <= 5) ? 'text-red-600' : 'text-blue-700'} whitespace-nowrap`}>
-                                                        {(forecast as any).recommendedBuyDate !== 'N/A' ? new Date((forecast as any).recommendedBuyDate).toLocaleDateString([], { year: 'numeric', month: 'short', day: 'numeric' }) : '-'}
-                                                    </span>
-                                                </div>
-                                            </TableCell>
-                                            <TableCell className="px-3 py-4 text-right">
+                                            <TableCell className="px-6 py-4 border-r border-l border-gray-200 text-center bg-gray-50/50">
                                                 {parseFloat(forecast.velocity) === 0 ? (
-                                                    <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest leading-none">INSUFFICIENT SALES DATA</span>
-                                                ) : forecast.reorderRecommendation > 0 ? (
-                                                    <div className="inline-flex items-center gap-1.5 text-blue-700 bg-blue-50 border border-blue-100 px-2 py-0.5 rounded-full font-black text-[11px]">
-                                                        +{forecast.reorderRecommendation}
+                                                    <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest leading-none">NO DATA</span>
+                                                ) : (forecast as any).smaRecommendation > 0 ? (
+                                                    <div className="inline-flex items-center gap-1.5 text-gray-500 font-bold text-[11px]">
+                                                        +{(forecast as any).smaRecommendation}
+                                                    </div>
+                                                ) : (
+                                                    <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest leading-none">NONE</span>
+                                                )}
+                                            </TableCell>
+                                            <TableCell className="px-3 py-4 text-center bg-indigo-50/30">
+                                                {parseFloat(forecast.velocity) === 0 ? (
+                                                    <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest leading-none">INSUFFICIENT DATA</span>
+                                                ) : (forecast as any).esRecommendation > 0 ? (
+                                                    <div className="inline-flex items-center justify-center gap-1.5 text-white bg-indigo-600 px-3 py-1 rounded-full font-black text-[12px] shadow-sm">
+                                                        +{(forecast as any).esRecommendation}
                                                         <ArrowRight className="size-3" />
                                                     </div>
                                                 ) : (
