@@ -142,14 +142,14 @@ export function StockForecasting({ products, transactions }: StockForecastingPro
                             <DialogTrigger asChild>
                                 <Button variant="outline" className="flex items-center gap-2 border-indigo-200 text-indigo-700 hover:bg-indigo-50 hover:text-indigo-800">
                                     <ShieldCheck className="size-4" />
-                                    Evaluate Algorithm Accuracy (Objective #3)
+                                    Evaluate Algorithm Accuracy
                                 </Button>
                             </DialogTrigger>
                             <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
                                 <DialogHeader>
                                     <DialogTitle className="text-indigo-900 flex items-center gap-2 text-xl border-b pb-4">
                                         <ShieldCheck className="size-6 text-indigo-600" />
-                                        Algorithmic Accuracy Report (Objective #3)
+                                        Algorithmic Accuracy Report
                                     </DialogTitle>
                                     <p className="text-sm text-gray-500 pt-2">
                                         Historical backtesting comparing Simple Moving Average (SMA) baseline vs. Custom Algorithmic Forecasting (Exponential Smoothing, α=0.7).
