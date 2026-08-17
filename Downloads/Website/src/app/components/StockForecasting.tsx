@@ -32,13 +32,13 @@ export function StockForecasting({ products, transactions }: StockForecastingPro
     const [searchTerm, setSearchTerm] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 8;
-    
+
     // Calculation: (Stock / Velocity) = Days left
     // ... rest of the code ...
 
     const [showMetrics, setShowMetrics] = useState(false);
     const [accuracyTimeframe, setAccuracyTimeframe] = useState<number>(30);
-    const [accuracyMetrics, setAccuracyMetrics] = useState<{sma: any, exponentialSmoothing: any, chartData?: any[]} | null>(null);
+    const [accuracyMetrics, setAccuracyMetrics] = useState<{ sma: any, exponentialSmoothing: any, chartData?: any[] } | null>(null);
 
     useEffect(() => {
         setCurrentPage(1);
@@ -48,7 +48,7 @@ export function StockForecasting({ products, transactions }: StockForecastingPro
         let totalSmaMape = 0, totalSmaMae = 0, totalSmaRmse = 0;
         let totalEsMape = 0, totalEsMae = 0, totalEsRmse = 0;
         let validProductsCount = 0;
-        
+
         let aggregatedChartData: any[] = [];
 
         products.forEach(p => {
@@ -62,7 +62,7 @@ export function StockForecasting({ products, transactions }: StockForecastingPro
                 totalEsMae += parseFloat(metrics.exponentialSmoothing.mae);
                 totalEsRmse += parseFloat(metrics.exponentialSmoothing.rmse);
                 validProductsCount++;
-                
+
                 if (aggregatedChartData.length === 0) {
                     aggregatedChartData = metrics.chartData.map(d => ({ ...d }));
                 } else {
@@ -155,13 +155,13 @@ export function StockForecasting({ products, transactions }: StockForecastingPro
                                 </CardDescription>
                             </div>
                             <div className="flex bg-white p-1 rounded-lg border border-indigo-200 shadow-sm">
-                                <button 
+                                <button
                                     onClick={() => setAccuracyTimeframe(7)}
                                     className={`px-3 py-1 text-xs font-bold rounded-md transition-colors ${accuracyTimeframe === 7 ? 'bg-indigo-600 text-white' : 'text-indigo-600 hover:bg-indigo-50'}`}
                                 >
                                     Weekly (Last 7 Days)
                                 </button>
-                                <button 
+                                <button
                                     onClick={() => setAccuracyTimeframe(30)}
                                     className={`px-3 py-1 text-xs font-bold rounded-md transition-colors ${accuracyTimeframe === 30 ? 'bg-indigo-600 text-white' : 'text-indigo-600 hover:bg-indigo-50'}`}
                                 >
@@ -176,9 +176,9 @@ export function StockForecasting({ products, transactions }: StockForecastingPro
                                     <ResponsiveContainer width="100%" height="100%">
                                         <LineChart data={accuracyMetrics.chartData} margin={{ top: 5, right: 20, left: -20, bottom: 5 }}>
                                             <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e7eb" />
-                                            <XAxis dataKey="date" tick={{fontSize: 10, fill: '#6b7280'}} tickLine={false} axisLine={false} />
-                                            <YAxis tick={{fontSize: 10, fill: '#6b7280'}} tickLine={false} axisLine={false} />
-                                            <RechartsTooltip 
+                                            <XAxis dataKey="date" tick={{ fontSize: 10, fill: '#6b7280' }} tickLine={false} axisLine={false} />
+                                            <YAxis tick={{ fontSize: 10, fill: '#6b7280' }} tickLine={false} axisLine={false} />
+                                            <RechartsTooltip
                                                 contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
                                                 itemStyle={{ fontSize: '12px', fontWeight: 'bold' }}
                                                 labelStyle={{ fontSize: '10px', color: '#6b7280', textTransform: 'uppercase', fontWeight: 'bold' }}
@@ -191,248 +191,232 @@ export function StockForecasting({ products, transactions }: StockForecastingPro
                                     </ResponsiveContainer>
                                 </div>
                             )}
-                            
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <div className="space-y-4 border rounded-lg p-4 bg-gray-50">
-                                    <h3 className="font-bold text-gray-700 text-center uppercase tracking-wider text-sm">Baseline: SMA</h3>
-                                    <div className="flex justify-between items-center border-b pb-2">
-                                        <span className="text-gray-500 font-medium">MAPE (Error %)</span>
-                                        <span className="font-bold text-gray-900 text-lg">{accuracyMetrics.sma.mape}</span>
-                                    </div>
-                                    <div className="flex justify-between items-center border-b pb-2">
-                                        <span className="text-gray-500 font-medium">MAE (Absolute Error)</span>
-                                        <span className="font-bold text-gray-900">{accuracyMetrics.sma.mae} units</span>
-                                    </div>
-                                    <div className="flex justify-between items-center">
-                                        <span className="text-gray-500 font-medium">RMSE (Squared Error)</span>
-                                        <span className="font-bold text-gray-900">{accuracyMetrics.sma.rmse}</span>
-                                    </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+                                <div className="space-y-3 border rounded-lg p-5 bg-gray-50 flex flex-col justify-center">
+                                    <h3 className="font-black text-gray-700 text-center uppercase tracking-wider text-sm border-b pb-2">Baseline: SMA</h3>
+                                    <p className="text-gray-600 text-sm text-center font-medium leading-relaxed">
+                                        Ito yung hula na recommendation base sa simpleng average ng mga nakaraang benta. Madalas itong huli at mabagal mag-adjust kapag may biglaang pagbabago sa demand.
+                                    </p>
                                 </div>
-                                <div className="space-y-4 border-2 border-indigo-200 rounded-lg p-4 bg-indigo-50/50 relative overflow-hidden">
+                                <div className="space-y-3 border-2 border-indigo-200 rounded-lg p-5 bg-indigo-50/50 relative overflow-hidden flex flex-col justify-center">
                                     <div className="absolute -right-6 -top-6 bg-green-500 text-white text-[9px] font-black px-8 py-1 rotate-45 transform origin-bottom-left uppercase tracking-widest shadow-sm">Winner</div>
-                                    <h3 className="font-bold text-indigo-900 text-center uppercase tracking-wider text-sm">Custom Algorithmic Forecasting (Exp. Smoothing)</h3>
-                                    <div className="flex justify-between items-center border-b border-indigo-100 pb-2">
-                                        <span className="text-indigo-700 font-medium flex items-center gap-2">MAPE (Error %) <Badge className="bg-green-500 hover:bg-green-600 text-white text-[9px] px-1 py-0 leading-none">LOWER IS BETTER</Badge></span>
-                                        <span className="font-black text-indigo-900 text-xl">{accuracyMetrics.exponentialSmoothing.mape}</span>
-                                    </div>
-                                    <div className="flex justify-between items-center border-b border-indigo-100 pb-2">
-                                        <span className="text-indigo-700 font-medium">MAE (Absolute Error)</span>
-                                        <span className="font-bold text-indigo-900">{accuracyMetrics.exponentialSmoothing.mae} units</span>
-                                    </div>
-                                    <div className="flex justify-between items-center">
-                                        <span className="text-indigo-700 font-medium">RMSE (Squared Error)</span>
-                                        <span className="font-bold text-indigo-900">{accuracyMetrics.exponentialSmoothing.rmse}</span>
-                                    </div>
+                                    <h3 className="font-black text-indigo-900 text-center uppercase tracking-wider text-sm border-b border-indigo-100 pb-2">Custom Algorithmic Forecasting (Exp. Smoothing)</h3>
+                                    <p className="text-indigo-800 text-sm text-center font-bold leading-relaxed">
+                                        Base sa dalawa, mas OK ang Exponential Smoothing dahil mabilis itong maka-detect at mag-adjust sa biglaang pagtaas o pagbaba ng benta. Ito ang ginagamit na Final Recommendation ng system.
+                                    </p>
                                 </div>
                             </div>
                         </CardContent>
                     </Card>
                 )}
 
-            <ErrorBoundary fallbackTitle="Forecasting Summary Error">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    <Card className="bg-green-50 border-2 border-green-200 shadow-lg transition-all duration-300 hover:scale-[1.02] hover:-translate-y-1 hover:shadow-xl">
-                        <CardHeader className="flex flex-row items-center justify-between pb-2">
-                            <CardTitle className="text-sm font-bold text-green-900 uppercase tracking-wider">Inventory Health</CardTitle>
-                            <ShieldCheck className="size-6 text-green-600" />
-                        </CardHeader>
-                        <CardContent>
-                            <div className="text-3xl font-black text-green-700">{products.length - stats.criticalStock}</div>
-                            <p className="text-xs font-semibold text-green-600 mt-1 uppercase tracking-wider">Items in Safe Zone</p>
-                        </CardContent>
-                    </Card>
+                <ErrorBoundary fallbackTitle="Forecasting Summary Error">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <Card className="bg-green-50 border-2 border-green-200 shadow-lg transition-all duration-300 hover:scale-[1.02] hover:-translate-y-1 hover:shadow-xl">
+                            <CardHeader className="flex flex-row items-center justify-between pb-2">
+                                <CardTitle className="text-sm font-bold text-green-900 uppercase tracking-wider">Inventory Health</CardTitle>
+                                <ShieldCheck className="size-6 text-green-600" />
+                            </CardHeader>
+                            <CardContent>
+                                <div className="text-3xl font-black text-green-700">{products.length - stats.criticalStock}</div>
+                                <p className="text-xs font-semibold text-green-600 mt-1 uppercase tracking-wider">Items in Safe Zone</p>
+                            </CardContent>
+                        </Card>
 
-                    <Card className="bg-amber-50 border-2 border-amber-200 shadow-lg transition-all duration-300 hover:scale-[1.02] hover:-translate-y-1 hover:shadow-xl font-medium">
-                        <CardHeader className="flex flex-row items-center justify-between pb-2">
-                            <CardTitle className="text-sm font-bold text-amber-900 uppercase tracking-wider">Critical Risk</CardTitle>
-                            <AlertTriangle className="size-6 text-amber-600" />
-                        </CardHeader>
-                        <CardContent>
-                            <div className="text-3xl font-black text-amber-700">{stats.criticalStock}</div>
-                            <p className="text-xs font-semibold text-amber-600 mt-1 uppercase tracking-wider">Runs out &lt; 7 Days</p>
-                        </CardContent>
-                    </Card>
+                        <Card className="bg-amber-50 border-2 border-amber-200 shadow-lg transition-all duration-300 hover:scale-[1.02] hover:-translate-y-1 hover:shadow-xl font-medium">
+                            <CardHeader className="flex flex-row items-center justify-between pb-2">
+                                <CardTitle className="text-sm font-bold text-amber-900 uppercase tracking-wider">Critical Risk</CardTitle>
+                                <AlertTriangle className="size-6 text-amber-600" />
+                            </CardHeader>
+                            <CardContent>
+                                <div className="text-3xl font-black text-amber-700">{stats.criticalStock}</div>
+                                <p className="text-xs font-semibold text-amber-600 mt-1 uppercase tracking-wider">Runs out &lt; 7 Days</p>
+                            </CardContent>
+                        </Card>
 
-                    <Card className="bg-blue-50 border-2 border-blue-200 shadow-lg transition-all duration-300 hover:scale-[1.02] hover:-translate-y-1 hover:shadow-xl font-medium">
-                        <CardHeader className="flex flex-row items-center justify-between pb-2">
-                            <CardTitle className="text-sm font-bold text-blue-900 uppercase tracking-wider">Daily Demand</CardTitle>
-                            <TrendingUp className="size-6 text-blue-600" />
-                        </CardHeader>
-                        <CardContent>
-                            <div className="text-3xl font-black text-blue-700">{stats.highVelocity}</div>
-                            <p className="text-xs font-semibold text-blue-600 mt-1 uppercase tracking-wider">Fast Moving Items</p>
-                        </CardContent>
-                    </Card>
-                </div>
-            </ErrorBoundary>
-
-            <ErrorBoundary fallbackTitle="Forecast Insights Error">
-                <Card className="border border-gray-200 overflow-hidden shadow-sm">
-                    <CardHeader className="bg-gray-50 border-b border-gray-200 flex flex-row items-center justify-between space-y-0 p-6">
-                        <div>
-                            <CardTitle className="text-lg font-bold text-gray-900 uppercase tracking-tight">Forecast Insights</CardTitle>
-                            <CardDescription className="text-sm text-gray-500">Estimated stock duration and dynamic reorder recommendations (14-days for fast-moving, 30-days for slow-moving) based on Exponential Smoothing.</CardDescription>
-                        </div>
-                        <div className="max-w-xs relative">
-                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-gray-400" />
-                            <Input
-                                placeholder="Search products..."
-                                value={searchTerm}
-                                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchTerm(e.target.value)}
-                                className="h-10 pl-10 bg-white border-gray-200"
-                            />
-                        </div>
-                    </CardHeader>
-                    <CardContent className="p-0">
-                        <div className="overflow-x-auto w-full">
-                            <Table className="w-full min-w-[800px]">
-                            <TableHeader>
-                                <TableRow className="bg-gray-100/50 border-b border-gray-200">
-                                    <TableHead className="px-2 py-3 font-black text-gray-700 uppercase text-[9px] w-[20%]">Product Name</TableHead>
-                                    <TableHead className="px-1 py-3 font-black text-gray-700 uppercase text-[9px] text-center">Daily Velocity</TableHead>
-                                    <TableHead className="px-1 py-3 font-black text-gray-700 uppercase text-[9px] text-center">Current Stock</TableHead>
-                                    <TableHead className="px-1 py-3 font-black text-gray-700 uppercase text-[9px] text-center">Stock Status</TableHead>
-                                    <TableHead className="px-1 py-3 font-black text-gray-700 uppercase text-[9px] text-center text-red-600">Days Left</TableHead>
-                                    <TableHead className="px-1 py-3 font-black text-gray-400 uppercase text-[9px] text-center border-l border-gray-200">SMA (Baseline)</TableHead>
-                                    <TableHead className="px-2 py-3 font-black text-indigo-700 uppercase text-[9px] text-center">Exp. Smoothing (Winner)</TableHead>
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody className="divide-y divide-gray-200">
-                                {paginatedProducts.map((p) => {
-                                    const forecast = getProductForecast(p);
-                                    
-                                    return (
-                                        <TableRow key={p.id} className="hover:bg-gray-50/50 transition-colors">
-                                            <TableCell className="px-3 py-4 border-r border-gray-200">
-                                                <div className="flex flex-col">
-                                                    <span className="font-bold text-gray-900 text-sm">{p.name}</span>
-                                                    <span className="text-[10px] text-gray-400 font-mono uppercase tracking-tighter mt-0.5">{p.sku}</span>
-                                                </div>
-                                            </TableCell>
-                                            <TableCell className="px-6 py-4 border-r border-gray-200 text-center">
-                                                <div className="flex items-center justify-center gap-1.5">
-                                                    <span className="font-mono font-bold text-sm text-gray-700">{forecast.velocity}</span>
-                                                    {parseFloat(forecast.velocity) > 0 ? (
-                                                        <TrendingUp className="size-3 text-green-600" />
-                                                    ) : (
-                                                        <TrendingDown className="size-3 text-gray-400" />
-                                                    )}
-                                                </div>
-                                            </TableCell>
-                                            <TableCell className="px-6 py-4 border-r border-gray-200 text-center">
-                                                <div className="flex flex-col items-center justify-center">
-                                                    <span className={`text-sm font-black ${(Number(p.quantity) + Number(p.newStockQuantity || 0)) === 0 ? 'text-red-600' : 'text-blue-800'}`}>
-                                                        {Number(p.quantity) + Number(p.newStockQuantity || 0)}
-                                                    </span>
-                                                    <span className="text-[9px] text-gray-400 font-bold uppercase">Total Units</span>
-                                                </div>
-                                            </TableCell>
-                                            <TableCell className="px-6 py-4 border-r border-gray-200 text-center">
-                                                {Number((forecast as any).daysRemaining) <= 7 || (Number(p.quantity) + Number(p.newStockQuantity || 0)) === 0 ? (
-                                                    <Badge className="bg-red-100 text-red-800 border-none px-2 py-0.5 text-[10px] font-black uppercase tracking-widest leading-none">CRITICAL</Badge>
-                                                ) : (Number((forecast as any).daysRemaining) <= 14 || (Number(p.quantity) + Number(p.newStockQuantity || 0)) <= Number(p.reorderLevel)) ? (
-                                                    <Badge className="bg-orange-100 text-orange-800 border-none px-2 py-0.5 text-[10px] font-bold uppercase tracking-widest leading-none">LOW STOCK</Badge>
-                                                ) : (
-                                                    <Badge className="bg-green-100 text-green-800 border-none px-2 py-0.5 text-[10px] font-bold uppercase tracking-widest leading-none">OPTIMAL</Badge>
-                                                )}
-                                            </TableCell>
-                                            <TableCell className="px-6 py-4 border-r border-gray-200 text-center">
-                                                <span className={`font-black text-sm ${(forecast as any).daysRemaining <= 7 || (Number(p.quantity) + Number(p.newStockQuantity || 0)) === 0 ? 'text-red-600' :
-                                                    ((forecast as any).daysRemaining <= 14 || (Number(p.quantity) + Number(p.newStockQuantity || 0)) <= p.reorderLevel) ? 'text-orange-600' : 'text-green-600'
-                                                    }`}>
-                                                    {(Number(p.quantity) + Number(p.newStockQuantity || 0)) === 0 ? '0' : ((forecast as any).daysRemaining === Infinity ? 'STABLE' : (forecast as any).daysRemaining)}
-                                                </span>
-                                            </TableCell>
-                                            <TableCell className="px-6 py-4 border-r border-l border-gray-200 text-center bg-gray-50/50">
-                                                {parseFloat(forecast.velocity) === 0 ? (
-                                                    <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest leading-none">NO DATA</span>
-                                                ) : (forecast as any).smaRecommendation > 0 ? (
-                                                    <div className="inline-flex items-center gap-1.5 text-gray-500 font-bold text-[11px]">
-                                                        +{(forecast as any).smaRecommendation}
-                                                    </div>
-                                                ) : (
-                                                    <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest leading-none">NONE</span>
-                                                )}
-                                            </TableCell>
-                                            <TableCell className="px-3 py-4 text-center bg-indigo-50/30">
-                                                {parseFloat(forecast.velocity) === 0 ? (
-                                                    <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest leading-none">INSUFFICIENT DATA</span>
-                                                ) : (forecast as any).esRecommendation > 0 ? (
-                                                    <div className="inline-flex items-center justify-center gap-1.5 text-white bg-indigo-600 px-3 py-1 rounded-full font-black text-[12px] shadow-sm">
-                                                        +{(forecast as any).esRecommendation}
-                                                        <ArrowRight className="size-3" />
-                                                    </div>
-                                                ) : (
-                                                    <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest leading-none">NONE</span>
-                                                )}
-                                            </TableCell>
-                                        </TableRow>
-                                    );
-                                })}
-                            </TableBody>
-                        </Table>
-                        </div>
-                    </CardContent>
-                    {/* Pagination Controls */}
-                    <div className="bg-gray-50 border-t border-gray-200 px-6 py-4 flex items-center justify-between">
-                        <div className="text-sm text-gray-500 font-medium">
-                            Showing <span className="text-gray-900 font-bold">{Math.min(filteredProducts.length, (currentPage - 1) * itemsPerPage + 1)}</span> to <span className="text-gray-900 font-bold">{Math.min(filteredProducts.length, currentPage * itemsPerPage)}</span> of <span className="text-gray-900 font-bold">{filteredProducts.length}</span> products
-                        </div>
-                        <div className="flex items-center gap-2">
-                            <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-                                disabled={currentPage === 1}
-                                className="bg-white border-gray-200 hover:bg-gray-100 disabled:opacity-50"
-                            >
-                                <ChevronLeft className="size-4 mr-1" />
-                                Previous
-                            </Button>
-                            <div className="flex items-center gap-1 hidden sm:flex">
-                                {(() => {
-                                    const pages = [];
-                                    let start = Math.max(1, currentPage - 1);
-                                    if (start + 2 > totalPages) start = Math.max(1, totalPages - 2);
-                                    let end = Math.min(totalPages, start + 2);
-
-                                    for (let i = start; i <= end; i++) {
-                                        pages.push(i);
-                                    }
-
-                                    return (
-                                        <>
-                                            {start > 1 && <span className="text-gray-400 px-1">...</span>}
-                                            {pages.map(page => (
-                                                <Button
-                                                    key={page}
-                                                    variant={currentPage === page ? "default" : "outline"}
-                                                    size="sm"
-                                                    onClick={() => setCurrentPage(page)}
-                                                    className={`size-8 p-0 font-bold ${currentPage === page ? "bg-gray-900 text-white" : "bg-white border-gray-200"}`}
-                                                >
-                                                    {page}
-                                                </Button>
-                                            ))}
-                                            {end < totalPages && <span className="text-gray-400 px-1">...</span>}
-                                        </>
-                                    );
-                                })()}
-                            </div>
-                            <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-                                disabled={currentPage === totalPages}
-                                className="bg-white border-gray-200 hover:bg-gray-100 disabled:opacity-50"
-                            >
-                                Next
-                                <ChevronRight className="size-4 ml-1" />
-                            </Button>
-                        </div>
+                        <Card className="bg-blue-50 border-2 border-blue-200 shadow-lg transition-all duration-300 hover:scale-[1.02] hover:-translate-y-1 hover:shadow-xl font-medium">
+                            <CardHeader className="flex flex-row items-center justify-between pb-2">
+                                <CardTitle className="text-sm font-bold text-blue-900 uppercase tracking-wider">Daily Demand</CardTitle>
+                                <TrendingUp className="size-6 text-blue-600" />
+                            </CardHeader>
+                            <CardContent>
+                                <div className="text-3xl font-black text-blue-700">{stats.highVelocity}</div>
+                                <p className="text-xs font-semibold text-blue-600 mt-1 uppercase tracking-wider">Fast Moving Items</p>
+                            </CardContent>
+                        </Card>
                     </div>
-                </Card>
-            </ErrorBoundary>
+                </ErrorBoundary>
+
+                <ErrorBoundary fallbackTitle="Forecast Insights Error">
+                    <Card className="border border-gray-200 overflow-hidden shadow-sm">
+                        <CardHeader className="bg-gray-50 border-b border-gray-200 flex flex-row items-center justify-between space-y-0 p-6">
+                            <div>
+                                <CardTitle className="text-lg font-bold text-gray-900 uppercase tracking-tight">Forecast Insights</CardTitle>
+                                <CardDescription className="text-sm text-gray-500">Estimated stock duration and dynamic reorder recommendations (14-days for fast-moving, 30-days for slow-moving) based on Exponential Smoothing.</CardDescription>
+                            </div>
+                            <div className="max-w-xs relative">
+                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-gray-400" />
+                                <Input
+                                    placeholder="Search products..."
+                                    value={searchTerm}
+                                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchTerm(e.target.value)}
+                                    className="h-10 pl-10 bg-white border-gray-200"
+                                />
+                            </div>
+                        </CardHeader>
+                        <CardContent className="p-0">
+                            <div className="overflow-x-auto w-full">
+                                <Table className="w-full min-w-[800px]">
+                                    <TableHeader>
+                                        <TableRow className="bg-gray-100/50 border-b border-gray-200">
+                                            <TableHead className="px-2 py-3 font-black text-gray-700 uppercase text-[9px] w-[20%]">Product Name</TableHead>
+                                            <TableHead className="px-1 py-3 font-black text-gray-700 uppercase text-[9px] text-center">Daily Velocity</TableHead>
+                                            <TableHead className="px-1 py-3 font-black text-gray-700 uppercase text-[9px] text-center">Current Stock</TableHead>
+                                            <TableHead className="px-1 py-3 font-black text-gray-700 uppercase text-[9px] text-center">Stock Status</TableHead>
+                                            <TableHead className="px-1 py-3 font-black text-gray-700 uppercase text-[9px] text-center text-red-600">Days Left</TableHead>
+                                            <TableHead className="px-1 py-3 font-black text-gray-700 uppercase text-[9px] text-center">Stockout Date</TableHead>
+                                            <TableHead className="px-1 py-3 font-black text-gray-700 uppercase text-[9px] text-center">Reorder Date</TableHead>
+                                            <TableHead className="px-2 py-3 font-black text-gray-700 uppercase text-[9px] text-right">Recommendation</TableHead>
+                                        </TableRow>
+                                    </TableHeader>
+                                    <TableBody className="divide-y divide-gray-200">
+                                        {paginatedProducts.map((p) => {
+                                            const forecast = getProductForecast(p);
+
+                                            return (
+                                                <TableRow key={p.id} className="hover:bg-gray-50/50 transition-colors">
+                                                    <TableCell className="px-3 py-4 border-r border-gray-200">
+                                                        <div className="flex flex-col">
+                                                            <span className="font-bold text-gray-900 text-sm">{p.name}</span>
+                                                            <span className="text-[10px] text-gray-400 font-mono uppercase tracking-tighter mt-0.5">{p.sku}</span>
+                                                        </div>
+                                                    </TableCell>
+                                                    <TableCell className="px-6 py-4 border-r border-gray-200 text-center">
+                                                        <div className="flex items-center justify-center gap-1.5">
+                                                            <span className="font-mono font-bold text-sm text-gray-700">{forecast.velocity}</span>
+                                                            {parseFloat(forecast.velocity) > 0 ? (
+                                                                <TrendingUp className="size-3 text-green-600" />
+                                                            ) : (
+                                                                <TrendingDown className="size-3 text-gray-400" />
+                                                            )}
+                                                        </div>
+                                                    </TableCell>
+                                                    <TableCell className="px-6 py-4 border-r border-gray-200 text-center">
+                                                        <div className="flex flex-col items-center justify-center">
+                                                            <span className={`text-sm font-black ${(Number(p.quantity) + Number(p.newStockQuantity || 0)) === 0 ? 'text-red-600' : 'text-blue-800'}`}>
+                                                                {Number(p.quantity) + Number(p.newStockQuantity || 0)}
+                                                            </span>
+                                                            <span className="text-[9px] text-gray-400 font-bold uppercase">Total Units</span>
+                                                        </div>
+                                                    </TableCell>
+                                                    <TableCell className="px-6 py-4 border-r border-gray-200 text-center">
+                                                        {Number((forecast as any).daysRemaining) <= 7 || (Number(p.quantity) + Number(p.newStockQuantity || 0)) === 0 ? (
+                                                            <Badge className="bg-red-100 text-red-800 border-none px-2 py-0.5 text-[10px] font-black uppercase tracking-widest leading-none">CRITICAL</Badge>
+                                                        ) : (Number((forecast as any).daysRemaining) <= 14 || (Number(p.quantity) + Number(p.newStockQuantity || 0)) <= Number(p.reorderLevel)) ? (
+                                                            <Badge className="bg-orange-100 text-orange-800 border-none px-2 py-0.5 text-[10px] font-bold uppercase tracking-widest leading-none">LOW STOCK</Badge>
+                                                        ) : (
+                                                            <Badge className="bg-green-100 text-green-800 border-none px-2 py-0.5 text-[10px] font-bold uppercase tracking-widest leading-none">OPTIMAL</Badge>
+                                                        )}
+                                                    </TableCell>
+                                                    <TableCell className="px-6 py-4 border-r border-gray-200 text-center">
+                                                        <span className={`font-black text-sm ${(forecast as any).daysRemaining <= 7 || (Number(p.quantity) + Number(p.newStockQuantity || 0)) === 0 ? 'text-red-600' :
+                                                            ((forecast as any).daysRemaining <= 14 || (Number(p.quantity) + Number(p.newStockQuantity || 0)) <= p.reorderLevel) ? 'text-orange-600' : 'text-green-600'
+                                                            }`}>
+                                                            {(Number(p.quantity) + Number(p.newStockQuantity || 0)) === 0 ? '0' : ((forecast as any).daysRemaining === Infinity ? 'STABLE' : (forecast as any).daysRemaining)}
+                                                        </span>
+                                                    </TableCell>
+                                                    <TableCell className="px-6 py-4 border-r border-gray-200 text-center">
+                                                        <span className="text-xs font-mono font-bold text-gray-600 whitespace-nowrap uppercase">
+                                                            {(forecast as any).stockOutDate !== 'N/A' ? new Date((forecast as any).stockOutDate).toLocaleDateString([], { year: 'numeric', month: 'short', day: 'numeric' }) : 'SUFFICIENT'}
+                                                        </span>
+                                                    </TableCell>
+                                                    <TableCell className="px-6 py-4 border-r border-gray-200 text-center">
+                                                        <div className="flex flex-col">
+                                                            <span className={`text-xs font-black ${((forecast as any).daysRemaining <= 5) ? 'text-red-600' : 'text-blue-700'} whitespace-nowrap`}>
+                                                                {(forecast as any).recommendedBuyDate !== 'N/A' ? new Date((forecast as any).recommendedBuyDate).toLocaleDateString([], { year: 'numeric', month: 'short', day: 'numeric' }) : '-'}
+                                                            </span>
+                                                        </div>
+                                                    </TableCell>
+                                                    <TableCell className="px-3 py-4 text-right">
+                                                        {parseFloat(forecast.velocity) === 0 ? (
+                                                            <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest leading-none">INSUFFICIENT SALES DATA</span>
+                                                        ) : forecast.reorderRecommendation > 0 ? (
+                                                            <div className="inline-flex items-center gap-1.5 text-blue-700 bg-blue-50 border border-blue-100 px-2 py-0.5 rounded-full font-black text-[11px]">
+                                                                +{forecast.reorderRecommendation}
+                                                                <ArrowRight className="size-3" />
+                                                            </div>
+                                                        ) : (
+                                                            <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest leading-none">NONE</span>
+                                                        )}
+                                                    </TableCell>
+                                                </TableRow>
+                                            );
+                                        })}
+                                    </TableBody>
+                                </Table>
+                            </div>
+                        </CardContent>
+                        {/* Pagination Controls */}
+                        <div className="bg-gray-50 border-t border-gray-200 px-6 py-4 flex items-center justify-between">
+                            <div className="text-sm text-gray-500 font-medium">
+                                Showing <span className="text-gray-900 font-bold">{Math.min(filteredProducts.length, (currentPage - 1) * itemsPerPage + 1)}</span> to <span className="text-gray-900 font-bold">{Math.min(filteredProducts.length, currentPage * itemsPerPage)}</span> of <span className="text-gray-900 font-bold">{filteredProducts.length}</span> products
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                                    disabled={currentPage === 1}
+                                    className="bg-white border-gray-200 hover:bg-gray-100 disabled:opacity-50"
+                                >
+                                    <ChevronLeft className="size-4 mr-1" />
+                                    Previous
+                                </Button>
+                                <div className="flex items-center gap-1 hidden sm:flex">
+                                    {(() => {
+                                        const pages = [];
+                                        let start = Math.max(1, currentPage - 1);
+                                        if (start + 2 > totalPages) start = Math.max(1, totalPages - 2);
+                                        let end = Math.min(totalPages, start + 2);
+
+                                        for (let i = start; i <= end; i++) {
+                                            pages.push(i);
+                                        }
+
+                                        return (
+                                            <>
+                                                {start > 1 && <span className="text-gray-400 px-1">...</span>}
+                                                {pages.map(page => (
+                                                    <Button
+                                                        key={page}
+                                                        variant={currentPage === page ? "default" : "outline"}
+                                                        size="sm"
+                                                        onClick={() => setCurrentPage(page)}
+                                                        className={`size-8 p-0 font-bold ${currentPage === page ? "bg-gray-900 text-white" : "bg-white border-gray-200"}`}
+                                                    >
+                                                        {page}
+                                                    </Button>
+                                                ))}
+                                                {end < totalPages && <span className="text-gray-400 px-1">...</span>}
+                                            </>
+                                        );
+                                    })()}
+                                </div>
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                                    disabled={currentPage === totalPages}
+                                    className="bg-white border-gray-200 hover:bg-gray-100 disabled:opacity-50"
+                                >
+                                    Next
+                                    <ChevronRight className="size-4 ml-1" />
+                                </Button>
+                            </div>
+                        </div>
+                    </Card>
+                </ErrorBoundary>
             </div>
         </ErrorBoundary>
     );
