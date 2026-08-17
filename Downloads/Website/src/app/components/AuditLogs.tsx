@@ -63,6 +63,19 @@ export function AuditLogs({ currentUser }: AuditLogsProps) {
         if (dateFilter === 'today') {
             return logDay.getTime() === today.getTime();
         }
+        if (dateFilter === 'weekly') {
+            const currentDay = now.getDay();
+            const distanceToMonday = currentDay === 0 ? 6 : currentDay - 1;
+            const monday = new Date(today);
+            monday.setDate(today.getDate() - distanceToMonday);
+            monday.setHours(0, 0, 0, 0);
+
+            const sunday = new Date(monday);
+            sunday.setDate(monday.getDate() + 6);
+            sunday.setHours(23, 59, 59, 999);
+
+            return logDate >= monday && logDate <= sunday;
+        }
         if (dateFilter === 'monthly') {
             return logDate.getMonth() === now.getMonth() && logDate.getFullYear() === now.getFullYear();
         }
@@ -133,6 +146,7 @@ export function AuditLogs({ currentUser }: AuditLogsProps) {
                                 <SelectContent className="border-slate-700 bg-slate-800 text-white font-bold">
                                     <SelectItem value="all">All Time History</SelectItem>
                                     <SelectItem value="today">Today Activity</SelectItem>
+                                    <SelectItem value="weekly">This Week</SelectItem>
                                     <SelectItem value="monthly">This Month</SelectItem>
                                     <SelectItem value="yearly">This Year</SelectItem>
                                 </SelectContent>

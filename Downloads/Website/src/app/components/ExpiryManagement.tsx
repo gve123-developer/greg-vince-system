@@ -75,7 +75,7 @@ export function ExpiryManagement({ currentUser, products, onProductsChange }: Ex
     const [searchTerm, setSearchTerm] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
     const [statusFilter, setStatusFilter] = useState<'all' | 'safe' | 'soon' | 'expired'>('all');
-    const [expiryTimeFilter, setExpiryTimeFilter] = useState<'all' | 'month' | 'year'>('all');
+    const [expiryTimeFilter, setExpiryTimeFilter] = useState<'all' | 'week' | 'month' | 'year'>('all');
     const itemsPerPage = 10;
 
     const getDaysRemaining = (expiryDate: string | undefined): number | undefined => {
@@ -102,7 +102,21 @@ export function ExpiryManagement({ currentUser, products, onProductsChange }: Ex
                 const expiryDate = new Date(p.expiryDate);
                 const now = new Date();
 
-                if (expiryTimeFilter === 'month') {
+                if (expiryTimeFilter === 'week') {
+                    const currentDay = now.getDay();
+                    const distanceToMonday = currentDay === 0 ? 6 : currentDay - 1;
+                    const monday = new Date(now);
+                    monday.setDate(now.getDate() - distanceToMonday);
+                    monday.setHours(0, 0, 0, 0);
+
+                    const sunday = new Date(monday);
+                    sunday.setDate(monday.getDate() + 6);
+                    sunday.setHours(23, 59, 59, 999);
+
+                    if (expiryDate < monday || expiryDate > sunday) {
+                        return false;
+                    }
+                } else if (expiryTimeFilter === 'month') {
                     if (expiryDate.getMonth() !== now.getMonth() || expiryDate.getFullYear() !== now.getFullYear()) {
                         return false;
                     }
@@ -288,6 +302,7 @@ export function ExpiryManagement({ currentUser, products, onProductsChange }: Ex
                                             </SelectTrigger>
                                             <SelectContent>
                                                 <SelectItem value="all">All Time</SelectItem>
+                                                <SelectItem value="week">This Week</SelectItem>
                                                 <SelectItem value="month">This Month</SelectItem>
                                                 <SelectItem value="year">This Year</SelectItem>
                                             </SelectContent>
