@@ -96,12 +96,33 @@ if (file_exists($envPath)) {
     out("No .env file found at {$envPath}. Falling back to system environment / defaults.", "warn");
 }
 
+// Support DATABASE_URL / MYSQL_URL
+$rawDbUrl = $_GET['url'] ?? getenv('DATABASE_URL') ?: (getenv('MYSQL_URL') ?: (getenv('CLEARDB_DATABASE_URL') ?: ($envVars['DATABASE_URL'] ?? ($envVars['MYSQL_URL'] ?? ''))));
+
+$defaultHost = "ierbkglctwgkpyshwqkdlht3";
+$defaultUser = "mysql";
+$defaultPass = "larable";
+$defaultDb   = "default";
+$defaultPort = "3306";
+
+if ($rawDbUrl) {
+    $parsed = parse_url($rawDbUrl);
+    if ($parsed) {
+        if (!empty($parsed['host'])) $defaultHost = $parsed['host'];
+        if (!empty($parsed['user'])) $defaultUser = $parsed['user'];
+        if (isset($parsed['pass'])) $defaultPass = $parsed['pass'];
+        if (!empty($parsed['path'])) $defaultDb   = ltrim($parsed['path'], '/');
+        if (!empty($parsed['port'])) $defaultPort = (string)$parsed['port'];
+        out("Loaded Database URL: <code>" . htmlspecialchars(preg_replace('/:[^:@]+@/', ':****@', $rawDbUrl)) . "</code>", "info");
+    }
+}
+
 // Allow URL override for easy browser testing
-$host = $_GET['host'] ?? getenv('DB_HOST') ?: ($envVars['DB_HOST'] ?? '127.0.0.1');
-$port = $_GET['port'] ?? getenv('DB_PORT') ?: ($envVars['DB_PORT'] ?? '3306');
-$user = $_GET['user'] ?? getenv('DB_USER') ?: ($envVars['DB_USER'] ?? 'root');
-$pass = $_GET['pass'] ?? (getenv('DB_PASSWORD') !== false ? getenv('DB_PASSWORD') : ($envVars['DB_PASSWORD'] ?? 'Larable@2025'));
-$db   = $_GET['dbname'] ?? getenv('DB_NAME') ?: ($envVars['DB_NAME'] ?? 'pos_inventory_system_db');
+$host = $_GET['host'] ?? getenv('DB_HOST') ?: (getenv('MYSQL_HOST') ?: ($envVars['DB_HOST'] ?? $defaultHost));
+$port = $_GET['port'] ?? getenv('DB_PORT') ?: (getenv('MYSQL_PORT') ?: ($envVars['DB_PORT'] ?? $defaultPort));
+$user = $_GET['user'] ?? getenv('DB_USER') ?: (getenv('MYSQL_USER') ?: ($envVars['DB_USER'] ?? $defaultUser));
+$pass = $_GET['pass'] ?? (getenv('DB_PASSWORD') !== false ? getenv('DB_PASSWORD') : (getenv('MYSQL_PASSWORD') !== false ? getenv('MYSQL_PASSWORD') : ($envVars['DB_PASSWORD'] ?? $defaultPass)));
+$db   = $_GET['dbname'] ?? getenv('DB_NAME') ?: (getenv('DB_DATABASE') ?: (getenv('MYSQL_DATABASE') ?: ($envVars['DB_NAME'] ?? $defaultDb)));
 
 $maskedPass = ($pass === '') ? '(empty string)' : str_repeat('*', max(1, strlen($pass) - 2)) . substr($pass, -2);
 
@@ -127,7 +148,7 @@ if ($conn->connect_error) {
 
     // 4. Test Alternative Fallback Passwords
     out("<br>Testing common fallback passwords...", "info");
-    $fallbacks = ['Larable@2025', 'root', '', '123456', 'password'];
+    $fallbacks = ['larable', 'Larable@2025', 'root', '', '123456', 'password'];
     $foundFallback = false;
 
     foreach ($fallbacks as $fbPass) {
@@ -152,10 +173,35 @@ if (isset($conn) && !$conn->connect_error) {
     out("Successfully connected to MySQL server! (Latency: {$latency}ms)", "success");
     out("MySQL Server Version: <strong>" . htmlspecialchars($conn->server_info) . "</strong>");
 
+    // Optional One-Click Database Initialization
+    $shouldInit = isset($_GET['init']) && $_GET['init'] === '1';
+    if ($shouldInit) {
+        out("<br><strong>Starting database schema initialization...</strong>", "info");
+        $sqlPath = __DIR__ . '/inventory_system_setup.sql';
+        if (!file_exists($sqlPath)) {
+            $sqlPath = dirname(__DIR__) . '/inventory_system_setup.sql';
+        }
+        if (file_exists($sqlPath)) {
+            $sqlContent = file_get_contents($sqlPath);
+            if ($conn->multi_query($sqlContent)) {
+                do {
+                    if ($result = $conn->store_result()) {
+                        $result->free();
+                    }
+                } while ($conn->more_results() && $conn->next_result());
+                out("Successfully executed schema from <code>" . basename($sqlPath) . "</code>!", "success");
+            } else {
+                out("Schema execution failed: " . htmlspecialchars($conn->error), "fail");
+            }
+        } else {
+            out("SQL file not found at {$sqlPath}", "warn");
+        }
+    }
+
     // Check Tables
     $res = $conn->query("SHOW TABLES");
+    $tables = [];
     if ($res) {
-        $tables = [];
         while ($row = $res->fetch_array()) {
             $tables[] = $row[0];
         }
@@ -168,7 +214,7 @@ if (isset($conn) && !$conn->connect_error) {
                 $isCrit = in_array($tableName, $critical) ? "<span class='badge badge-success'>Core</span>" : "";
                 echo "<tr><td>" . ($idx + 1) . "</td><td><code>{$tableName}</code></td><td>{$isCrit}</td></tr>";
             }
-            echo "tbody></table>";
+            echo "</tbody></table>";
         } else {
             foreach ($tables as $tableName) {
                 echo "  - {$tableName}\n";
@@ -178,13 +224,30 @@ if (isset($conn) && !$conn->connect_error) {
         out("Could not list tables: " . htmlspecialchars($conn->error), "warn");
     }
 
+    // Show One-Click Init button if tables are missing or if user wants to reset
+    if (!$isCli) {
+        $hasUsers = in_array('users', $tables);
+        if (!$hasUsers) {
+            echo "<div style='margin-top:20px; padding:16px; background:#451a03; border:1px solid #b45309; border-radius:8px;'>";
+            echo "<h3 style='margin:0 0 10px 0; color:#fde047;'>⚠️ Core Tables Missing</h3>";
+            echo "<p style='margin:0 0 12px 0;'>Database '{$db}' connected, but tables like <code>users</code> have not been created yet.</p>";
+            echo "<a href='?init=1' style='display:inline-block; padding:10px 18px; background:#16a34a; color:#fff; text-decoration:none; border-radius:6px; font-weight:bold;'>⚡ Initialize Database Tables Now</a>";
+            echo "</div>";
+        } else {
+            echo "<div style='margin-top:16px;'>";
+            echo "<a href='?init=1' onclick=\"return confirm('Are you sure you want to re-run the setup SQL? Existing tables may be refreshed.');\" style='font-size:0.85rem; color:#94a3b8; text-decoration:underline;'>Re-run Database Setup (Reset / Seed)</a>";
+            echo "</div>";
+        }
+    }
+
     $conn->close();
 }
 
 if (!$isCli) {
     echo "<div class='hint'>
         <strong>Tip:</strong> You can override credentials directly in the URL: <br>
-        <code>?host=127.0.0.1&port=3306&user=root&pass=YOUR_PASSWORD&dbname=pos_inventory_system_db</code>
+        <code>?url=mysql://mysql:larable@ierbkglctwgkpyshwqkdlht3:3306/default</code><br>
+        or <code>?host=ierbkglctwgkpyshwqkdlht3&port=3306&user=mysql&pass=larable&dbname=default</code>
     </div>";
     echo "</div></body></html>";
 }

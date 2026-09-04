@@ -5,7 +5,7 @@ ini_set('display_errors', '0');  // Don't show errors to browser — log them to
 ini_set('log_errors', '1');
 
 // Auto-load .env if not loaded by server
-if (!getenv('DB_HOST')) {
+if (!getenv('DB_HOST') && !getenv('DATABASE_URL') && !getenv('MYSQL_URL')) {
     $envPath = dirname(__DIR__) . '/.env';
     if (!file_exists($envPath)) {
         $envPath = dirname(__DIR__, 2) . '/.env';
@@ -27,12 +27,44 @@ if (!getenv('DB_HOST')) {
     }
 }
 
-// Support Environment Variables for Production with fallback to Larable@2025 / root
-$servername = getenv('DB_HOST') ?: "127.0.0.1";
-$username = getenv('DB_USER') ?: "root";
-$password = getenv('DB_PASSWORD') !== false ? getenv('DB_PASSWORD') : "Larable@2025";
-$dbname = getenv('DB_NAME') ?: "pos_inventory_system_db";
-$port = getenv('DB_PORT') ?: "3306";
+// Default Production / Coolify Credentials
+$servername = "ierbkglctwgkpyshwqkdlht3";
+$username = "mysql";
+$password = "larable";
+$dbname = "default";
+$port = "3306";
+
+// Parse DATABASE_URL / MYSQL_URL if provided (e.g. mysql://mysql:larable@ierbkglctwgkpyshwqkdlht3:3306/default)
+$rawDbUrl = getenv('DATABASE_URL') ?: (getenv('MYSQL_URL') ?: (getenv('CLEARDB_DATABASE_URL') ?: ($_ENV['DATABASE_URL'] ?? ($_SERVER['DATABASE_URL'] ?? ''))));
+if ($rawDbUrl) {
+    $parsed = parse_url($rawDbUrl);
+    if ($parsed) {
+        if (!empty($parsed['host'])) $servername = $parsed['host'];
+        if (!empty($parsed['user'])) $username = $parsed['user'];
+        if (isset($parsed['pass'])) $password = $parsed['pass'];
+        if (!empty($parsed['path'])) $dbname = ltrim($parsed['path'], '/');
+        if (!empty($parsed['port'])) $port = (string)$parsed['port'];
+    }
+}
+
+// Individual Environment Variables (override connection URL if explicitly provided)
+$servername = getenv('DB_HOST') ?: (getenv('MYSQL_HOST') ?: (getenv('MYSQLHOST') ?: ($_ENV['DB_HOST'] ?? ($_SERVER['DB_HOST'] ?? $servername))));
+$username   = getenv('DB_USER') ?: (getenv('MYSQL_USER') ?: (getenv('MYSQLUSER') ?: ($_ENV['DB_USER'] ?? ($_SERVER['DB_USER'] ?? $username))));
+
+if (getenv('DB_PASSWORD') !== false && getenv('DB_PASSWORD') !== '') {
+    $password = getenv('DB_PASSWORD');
+} elseif (getenv('MYSQL_PASSWORD') !== false && getenv('MYSQL_PASSWORD') !== '') {
+    $password = getenv('MYSQL_PASSWORD');
+} elseif (getenv('MYSQLPASSWORD') !== false && getenv('MYSQLPASSWORD') !== '') {
+    $password = getenv('MYSQLPASSWORD');
+} elseif (!empty($_ENV['DB_PASSWORD'])) {
+    $password = $_ENV['DB_PASSWORD'];
+} elseif (!empty($_SERVER['DB_PASSWORD'])) {
+    $password = $_SERVER['DB_PASSWORD'];
+}
+
+$dbname = getenv('DB_NAME') ?: (getenv('DB_DATABASE') ?: (getenv('MYSQL_DATABASE') ?: (getenv('MYSQLDATABASE') ?: ($_ENV['DB_NAME'] ?? ($_SERVER['DB_NAME'] ?? $dbname)))));
+$port   = getenv('DB_PORT') ?: (getenv('MYSQL_PORT') ?: (getenv('MYSQLPORT') ?: ($_ENV['DB_PORT'] ?? ($_SERVER['DB_PORT'] ?? $port))));
 
 try {
     mysqli_report(MYSQLI_REPORT_OFF);
@@ -40,7 +72,7 @@ try {
 
     // Auto-fallback if initial connection fails
     if ($conn->connect_error) {
-        $fallbacks = ['Larable@2025', 'root', ''];
+        $fallbacks = ['larable', 'Larable@2025', 'root', ''];
         foreach ($fallbacks as $fbPass) {
             if ($fbPass === $password) continue;
             $testConn = @new mysqli($servername, $username, $fbPass, $dbname, (int) $port);

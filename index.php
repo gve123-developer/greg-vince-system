@@ -1,6 +1,6 @@
 <?php
 // Auto-load .env
-if (!getenv('DB_HOST')) {
+if (!getenv('DB_HOST') && !getenv('DATABASE_URL') && !getenv('MYSQL_URL')) {
     $envPath = __DIR__ . '/.env';
     if (file_exists($envPath)) {
         $lines = file($envPath, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);

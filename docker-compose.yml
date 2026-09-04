@@ -1,0 +1,17 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: zoe-pos-system
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      PORT: "8000"
+      DB_HOST: "ierbkglctwgkpyshwqkdlht3"
+      DB_PORT: "3306"
+      DB_USER: "mysql"
+      DB_PASSWORD: "larable"
+      DB_NAME: "default"
+      DATABASE_URL: "mysql://mysql:larable@ierbkglctwgkpyshwqkdlht3:3306/default"
