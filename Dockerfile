@@ -20,12 +20,12 @@ RUN sed -i '/<Directory \/var\/www\/>/,/<\/Directory>/ s/AllowOverride None/Allo
 
 # Set default environment variables for Port 8000 and Coolify MySQL database
 ENV PORT=8000
-ENV DB_HOST=ierbkglctwgkpyshwqkdlht3
+ENV DB_HOST=qbl5hgdrdxhxtde3se62tuxk
 ENV DB_PORT=3306
 ENV DB_USER=mysql
-ENV DB_PASSWORD=larable
+ENV DB_PASSWORD=vince-mysql
 ENV DB_NAME=default
-ENV DATABASE_URL=mysql://mysql:larable@ierbkglctwgkpyshwqkdlht3:3306/default
+ENV DATABASE_URL=mysql://mysql:vince-mysql@qbl5hgdrdxhxtde3se62tuxk:3306/default
 
 # Pre-configure Apache to listen on port 8000
 RUN sed -i 's/Listen 80/Listen 8000/' /etc/apache2/ports.conf && \

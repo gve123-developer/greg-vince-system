@@ -28,13 +28,13 @@ if (!getenv('DB_HOST') && !getenv('DATABASE_URL') && !getenv('MYSQL_URL')) {
 }
 
 // Default Production / Coolify Credentials
-$servername = "ierbkglctwgkpyshwqkdlht3";
+$servername = "qbl5hgdrdxhxtde3se62tuxk";
 $username = "mysql";
-$password = "larable";
+$password = "vince-mysql";
 $dbname = "default";
 $port = "3306";
 
-// Parse DATABASE_URL / MYSQL_URL if provided (e.g. mysql://mysql:larable@ierbkglctwgkpyshwqkdlht3:3306/default)
+// Parse DATABASE_URL / MYSQL_URL if provided (e.g. mysql://mysql:vince-mysql@qbl5hgdrdxhxtde3se62tuxk:3306/default)
 $rawDbUrl = getenv('DATABASE_URL') ?: (getenv('MYSQL_URL') ?: (getenv('CLEARDB_DATABASE_URL') ?: ($_ENV['DATABASE_URL'] ?? ($_SERVER['DATABASE_URL'] ?? ''))));
 if ($rawDbUrl) {
     $parsed = parse_url($rawDbUrl);
@@ -72,7 +72,7 @@ try {
 
     // Auto-fallback if initial connection fails
     if ($conn->connect_error) {
-        $fallbacks = ['larable', 'Larable@2025', 'root', ''];
+        $fallbacks = ['vince-mysql', 'larable', 'Larable@2025', 'root', ''];
         foreach ($fallbacks as $fbPass) {
             if ($fbPass === $password) continue;
             $testConn = @new mysqli($servername, $username, $fbPass, $dbname, (int) $port);

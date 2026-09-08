@@ -99,9 +99,9 @@ if (file_exists($envPath)) {
 // Support DATABASE_URL / MYSQL_URL
 $rawDbUrl = $_GET['url'] ?? getenv('DATABASE_URL') ?: (getenv('MYSQL_URL') ?: (getenv('CLEARDB_DATABASE_URL') ?: ($envVars['DATABASE_URL'] ?? ($envVars['MYSQL_URL'] ?? ''))));
 
-$defaultHost = "ierbkglctwgkpyshwqkdlht3";
+$defaultHost = "qbl5hgdrdxhxtde3se62tuxk";
 $defaultUser = "mysql";
-$defaultPass = "larable";
+$defaultPass = "vince-mysql";
 $defaultDb   = "default";
 $defaultPort = "3306";
 
@@ -148,7 +148,7 @@ if ($conn->connect_error) {
 
     // 4. Test Alternative Fallback Passwords
     out("<br>Testing common fallback passwords...", "info");
-    $fallbacks = ['larable', 'Larable@2025', 'root', '', '123456', 'password'];
+    $fallbacks = ['vince-mysql', 'larable', 'Larable@2025', 'root', '', '123456', 'password'];
     $foundFallback = false;
 
     foreach ($fallbacks as $fbPass) {
@@ -246,8 +246,8 @@ if (isset($conn) && !$conn->connect_error) {
 if (!$isCli) {
     echo "<div class='hint'>
         <strong>Tip:</strong> You can override credentials directly in the URL: <br>
-        <code>?url=mysql://mysql:larable@ierbkglctwgkpyshwqkdlht3:3306/default</code><br>
-        or <code>?host=ierbkglctwgkpyshwqkdlht3&port=3306&user=mysql&pass=larable&dbname=default</code>
+        <code>?url=mysql://mysql:vince-mysql@qbl5hgdrdxhxtde3se62tuxk:3306/default</code><br>
+        or <code>?host=qbl5hgdrdxhxtde3se62tuxk&port=3306&user=mysql&pass=vince-mysql&dbname=default</code>
     </div>";
     echo "</div></body></html>";
 }
